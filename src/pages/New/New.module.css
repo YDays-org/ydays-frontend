@@ -1,0 +1,199 @@
+/* News.module.css - Premium Glassmorphism Redesign */
+.news-page {
+  width: 100%;
+  min-height: 100vh;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 4rem;
+}
+.news-header {
+  text-align: center;
+  margin: 3.5rem 0 2.5rem 0;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(16px);
+  border-radius: 32px;
+  box-shadow: 0 4px 32px rgba(66,171,158,0.10);
+  padding: 2.5rem 2rem 2rem 2rem;
+  max-width: 700px;
+  width: 100%;
+  z-index: 2;
+}
+.news-header h1 {
+  color: #42AB9E;
+  font-size: 2.6rem;
+  font-weight: 900;
+  margin-bottom: 0.7rem;
+  letter-spacing: 1.2px;
+  text-shadow: 0 2px 12px rgba(66,171,158,0.10);
+}
+.news-header p {
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.news-container {
+  display: flex;
+  gap: 2.5rem;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+.news-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  justify-content: flex-start;
+  align-items: stretch;
+  animation: fadeIn 0.7s cubic-bezier(.23,1.01,.32,1) 0.1s both;
+}
+.global-card {
+  background: rgba(255,255,255,0.55);
+  border-radius: 28px;
+  box-shadow: 0 4px 32px rgba(66,171,158,0.13);
+  overflow: hidden;
+  width: 370px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s, transform 0.2s, border 0.2s;
+  border: 2.5px solid transparent;
+  position: relative;
+  cursor: pointer;
+  animation: fadeInUp 0.7s cubic-bezier(.23,1.01,.32,1) 0.1s both;
+}
+.global-card:hover {
+  box-shadow: 0 8px 48px rgba(66,171,158,0.18);
+  border: 2.5px solid #42AB9E;
+  transform: translateY(-6px) scale(1.03);
+}
+.global-card-image {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  overflow: hidden;
+  border-radius: 0 0 24px 24px;
+}
+.global-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.97) saturate(1.1);
+  transition: filter 0.2s;
+}
+.global-card:hover .global-card-image img {
+  filter: brightness(1.05) saturate(1.2);
+}
+.global-card-category {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: linear-gradient(120deg, #42AB9E 60%, #e0f7f4 100%);
+  color: #fff;
+  padding: 0.4rem 1.1rem;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(66,171,158,0.13);
+  letter-spacing: 0.5px;
+}
+.global-card-info {
+  padding: 1.5rem 1.5rem 1.8rem 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.global-card-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.35rem;
+  color: #222;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.global-card-description {
+  color: #444;
+  font-size: 1.08rem;
+  opacity: 0.92;
+  margin-bottom: 0.5rem;
+}
+.global-card-meta {
+  display: flex;
+  gap: 1.3rem;
+  font-size: 1.08rem;
+  color: #42AB9E;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.global-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.global-card-price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.7rem;
+  gap: 1.2rem;
+}
+.global-card-price-value {
+  color: #42AB9E;
+  font-weight: bold;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+}
+.global-card-button {
+  background: linear-gradient(120deg, #42AB9E 60%, #e0f7f4 100%);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 0.9rem 2.2rem;
+  font-size: 1.08rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 2px 12px rgba(66,171,158,0.13);
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+.global-card-button:hover {
+  background: #2e7c72;
+  color: #fff;
+  transform: scale(1.06);
+}
+@media (max-width: 1100px) {
+  .news-container {
+    flex-direction: column;
+    gap: 2rem;
+    align-items: stretch;
+  }
+}
+@media (max-width: 700px) {
+  .news-header {
+    padding: 1.5rem 0.5rem 1.2rem 0.5rem;
+    border-radius: 18px;
+  }
+  .news-container {
+    padding: 0 0.5rem;
+  }
+  .global-card {
+    width: 100%;
+    min-width: 0;
+    border-radius: 14px;
+  }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

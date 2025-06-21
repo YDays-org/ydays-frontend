@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { FaMapMarkerAlt, FaCalendar, FaClock, FaFilter, FaMap, FaList } from 'react-icons/fa';
-import './Events.css';
+import { FaList, FaMap } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import styles from './Events.module.css';
+import FilterSidebar from '../../components/FilterSidebar';
+import GlobalCard from '../../components/GlobalCard';
 
 const Events = () => {
   const [viewMode, setViewMode] = useState('list');
   const [filters, setFilters] = useState({
     category: '',
-    date: '',
-    location: '',
-    price: ''
+    priceRange: '',
+    duration: '',
+    rating: ''
   });
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const events = [
     {
@@ -57,154 +63,106 @@ const Events = () => {
       description: "Une soirée magique avec la musique traditionnelle arabo-andalouse."
     }
   ];
-
   const categories = [
-    "Toutes les catégories",
-    "Musique",
-    "Art",
-    "Culture",
-    "Théâtre",
-    "Cinéma",
-    "Sport",
-    "Gastronomie"
+    'Toutes les catégories',
+    'Culture',
+    'Gastronomie',
+    'Découverte',
+    'Sport',
+    'Shopping',
+    'Bien-être'
   ];
 
+  const filteredEvents = events.filter(event => {
+    let match = true;
+    if (filters.category && filters.category !== 'Toutes les catégories') {
+      match = match && event.category === filters.category;
+    }
+    if (filters.priceRange) {
+      const [min, max] = filters.priceRange.split('-');
+      if (max) {
+        match = match && event.price >= parseInt(min) && event.price <= parseInt(max);
+      } else if (min && min.endsWith('+')) {
+        match = match && event.price >= parseInt(min);
+      }
+    }
+    if (filters.duration) {
+      if (filters.duration === '4h+') {
+        match = match && parseInt(event.duration) >= 4;
+      } else {
+        match = match && event.duration.startsWith(filters.duration);
+      }
+    }
+    if (filters.rating) {
+      match = match && event.rating >= parseFloat(filters.rating);
+    }
+    return match;
+  });
+
   const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
+    setFilters(prev => ({ ...prev, [filterType]: value }));
+  };
+  const handleClearFilters = () => {
+    setFilters({ category: '', priceRange: '', duration: '', rating: '' });
+  };
+  const handleReserve = (id) => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      navigate(`/booking/event/${id}`);
+    }
   };
 
   return (
-    <div className="events-page">
-      <div className="events-header">
-        <h1>Événements à Casablanca</h1>
-        <p>Ne manquez aucun événement dans la ville blanche</p>
+    <div className={styles['events-page']}>
+      <div className={styles['events-header']}>
+        <h1>Événements</h1>
+        <p>Découvrez les meilleurs événements à Casablanca</p>
       </div>
-
-      <div className="events-container">
-        {/* Filters Sidebar */}
-        <aside className="filters-sidebar">
-          <div className="filters-header">
-            <FaFilter />
-            <h3>Filtres</h3>
-          </div>
-
-          <div className="filter-group">
-            <label>Catégorie</label>
-            <select 
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-            >
-              {categories.map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Date</label>
-            <select 
-              value={filters.date}
-              onChange={(e) => handleFilterChange('date', e.target.value)}
-            >
-              <option value="">Toutes les dates</option>
-              <option value="today">Aujourd'hui</option>
-              <option value="tomorrow">Demain</option>
-              <option value="week">Cette semaine</option>
-              <option value="month">Ce mois</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Lieu</label>
-            <select 
-              value={filters.location}
-              onChange={(e) => handleFilterChange('location', e.target.value)}
-            >
-              <option value="">Tous les lieux</option>
-              <option value="theatre">Théâtre Mohammed V</option>
-              <option value="villa">Villa des Arts</option>
-              <option value="palais">Palais des Congrès</option>
-              <option value="conservatoire">Conservatoire</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Prix</label>
-            <select 
-              value={filters.price}
-              onChange={(e) => handleFilterChange('price', e.target.value)}
-            >
-              <option value="">Tous les prix</option>
-              <option value="free">Gratuit</option>
-              <option value="0-50">Moins de 50 MAD</option>
-              <option value="50-150">50-150 MAD</option>
-              <option value="150+">Plus de 150 MAD</option>
-            </select>
-          </div>
-
-          <button className="clear-filters">Effacer les filtres</button>
-        </aside>
-
-        {/* Main Content */}
-        <main className="events-main">
-          <div className="events-toolbar">
-            <div className="results-count">
-              {events.length} événements trouvés
+      <div className={styles['events-container']}>
+        <FilterSidebar
+          filters={filters}
+          categories={categories}
+          onChange={handleFilterChange}
+          onClear={handleClearFilters}
+        />
+        <main className={styles['events-main']}>
+          <div className={styles['events-toolbar']}>
+            <div className={styles['results-count']}>
+              {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''} trouvé{filteredEvents.length > 1 ? 's' : ''}
             </div>
-            <div className="view-controls">
-              <button 
-                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+            <div className={styles['view-controls']}>
+              <button
+                className={`${styles['view-btn']} ${viewMode === 'list' ? styles['active'] : ''}`}
                 onClick={() => setViewMode('list')}
+                aria-label="Vue liste"
               >
                 <FaList /> Liste
               </button>
-              <button 
-                className={`view-btn ${viewMode === 'map' ? 'active' : ''}`}
+              <button
+                className={`${styles['view-btn']} ${viewMode === 'map' ? styles['active'] : ''}`}
                 onClick={() => setViewMode('map')}
+                aria-label="Vue carte"
               >
                 <FaMap /> Carte
               </button>
             </div>
           </div>
-
           {viewMode === 'list' ? (
-            <div className="events-list">
-              {events.map(event => (
-                <div key={event.id} className="event-item">
-                  <div className="event-image">
-                    <img src={event.image} alt={event.title} />
-                    <div className="event-category">{event.category}</div>
-                  </div>
-                  <div className="event-info">
-                    <h3>{event.title}</h3>
-                    <p className="event-description">{event.description}</p>
-                    <div className="event-meta">
-                      <span className="date">
-                        <FaCalendar /> {new Date(event.date).toLocaleDateString('fr-FR')}
-                      </span>
-                      <span className="time">
-                        <FaClock /> {event.time}
-                      </span>
-                      <span className="location">
-                        <FaMapMarkerAlt /> {event.location}
-                      </span>
-                    </div>
-                    <div className="event-price">
-                      <span className="price">{event.price} MAD</span>
-                      <button className="book-btn">Réserver</button>
-                    </div>
-                  </div>
+            <div className={styles['events-list']}>
+              {filteredEvents.length === 0 ? (
+                <div style={{ color: '#42AB9E', fontWeight: 700, fontSize: '1.2rem', padding: '2.5rem' }}>
+                  Aucun événement ne correspond à vos filtres.
                 </div>
-              ))}
+              ) : (
+                filteredEvents.map(event => (
+                  <GlobalCard key={event.id} item={event} onReserve={handleReserve} />
+                ))
+              )}
             </div>
           ) : (
-            <div className="map-view">
-              <div className="map-placeholder">
+            <div className={styles['map-view']}>
+              <div className={styles['map-placeholder']}>
                 <p>Carte interactive en cours de chargement...</p>
                 <p>Vue carte des événements</p>
               </div>
@@ -216,4 +174,4 @@ const Events = () => {
   );
 };
 
-export default Events; 
+export default Events;

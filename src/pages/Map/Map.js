@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { FaMapMarkerAlt, FaFilter, FaList, FaMap } from 'react-icons/fa';
-import './Map.css';
+import { FaMapMarkerAlt, FaList, FaMap } from 'react-icons/fa';
+import styles from './Map.module.css';
 
 const Map = () => {
   const [mapType, setMapType] = useState('all');
@@ -37,17 +37,17 @@ const Map = () => {
   ];
 
   return (
-    <div className="map-page">
-      <div className="map-header">
+    <div className={styles['map-page']}>
+      <div className={styles['map-header']}>
         <h1>Carte de Casablanca</h1>
         <p>Découvrez les activités, événements et restaurants sur la carte</p>
       </div>
 
-      <div className="map-container">
-        <div className="map-sidebar">
-          <div className="map-filters">
+      <div className={styles['map-container']}>
+        <div className={styles['map-sidebar']}>
+          <div className={styles['map-filters']}>
             <h3>Filtres</h3>
-            <div className="filter-buttons">
+            <div className={styles['filter-buttons']}>
               <button 
                 className={`filter-btn ${mapType === 'all' ? 'active' : ''}`}
                 onClick={() => setMapType('all')}
@@ -75,20 +75,20 @@ const Map = () => {
             </div>
           </div>
 
-          <div className="map-points-list">
+          <div className={styles['map-points-list']}>
             <h3>Points d'intérêt</h3>
-            <div className="points-list">
+            <div className={styles['points-list']}>
               {mapPoints
                 .filter(point => mapType === 'all' || point.type === mapType)
                 .map(point => (
-                  <div key={point.id} className="map-point-item">
-                    <div className="point-image">
+                  <div key={point.id} className={styles['map-point-item']}>
+                    <div className={styles['point-image']}>
                       <img src={point.image} alt={point.title} />
                     </div>
-                    <div className="point-info">
+                    <div className={styles['point-info']}>
                       <h4>{point.title}</h4>
-                      <p className="point-category">{point.category}</p>
-                      <p className="point-location">
+                      <p className={styles['point-category']}>{point.category}</p>
+                      <p className={styles['point-location']}>
                         <FaMapMarkerAlt /> {point.location}
                       </p>
                     </div>
@@ -98,9 +98,9 @@ const Map = () => {
           </div>
         </div>
 
-        <div className="map-main">
-          <div className="map-toolbar">
-            <div className="view-controls">
+        <div className={styles['map-main']}>
+          <div className={styles['map-toolbar']}>
+            <div className={styles['view-controls']}>
               <button 
                 className={`view-btn ${viewMode === 'map' ? 'active' : ''}`}
                 onClick={() => setViewMode('map')}
@@ -116,13 +116,13 @@ const Map = () => {
             </div>
           </div>
 
-          <div className="map-content">
+          <div className={styles['map-content']}>
             {viewMode === 'map' ? (
-              <div className="map-view">
-                <div className="map-placeholder">
+              <div className={styles['map-view']}>
+                <div className={styles['map-placeholder']}>
                   <p>Carte interactive en cours de chargement...</p>
                   <p>Intégration Leaflet/Google Maps à venir</p>
-                  <div className="map-features">
+                  <div className={styles['map-features']}>
                     <h4>Fonctionnalités de la carte :</h4>
                     <ul>
                       <li>Géolocalisation de l'utilisateur</li>
@@ -135,23 +135,23 @@ const Map = () => {
                 </div>
               </div>
             ) : (
-              <div className="list-view">
-                <div className="points-grid">
+              <div className={styles['list-view']}>
+                <div className={styles['points-grid']}>
                   {mapPoints
                     .filter(point => mapType === 'all' || point.type === mapType)
                     .map(point => (
-                      <div key={point.id} className="point-card">
-                        <div className="point-card-image">
+                      <div key={point.id} className={styles['point-card']}>
+                        <div className={styles['point-card-image']}>
                           <img src={point.image} alt={point.title} />
-                          <div className="point-type">{point.type}</div>
+                          <div className={styles['point-type']}>{point.type}</div>
                         </div>
-                        <div className="point-card-info">
+                        <div className={styles['point-card-info']}>
                           <h3>{point.title}</h3>
-                          <p className="point-category">{point.category}</p>
-                          <p className="point-location">
+                          <p className={styles['point-category']}>{point.category}</p>
+                          <p className={styles['point-location']}>
                             <FaMapMarkerAlt /> {point.location}
                           </p>
-                          <button className="point-btn">Voir détails</button>
+                          <button className={styles['point-btn']}>Voir détails</button>
                         </div>
                       </div>
                     ))}
@@ -165,4 +165,4 @@ const Map = () => {
   );
 };
 
-export default Map; 
+export default Map;

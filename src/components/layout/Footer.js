@@ -1,24 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
-import './Footer.css';
+import styles from './Footer.module.css';
 
 const Footer = () => {
   return (
-    <footer className="footer">
-      <div className="footer-container">
-        <div className="footer-section">
+    <footer className={styles.footer}>
+      <div className={styles['footer-container']}>
+        <div className={styles['footer-section']}>
           <h3>Casablanca Activities</h3>
           <p>Découvrez et réservez les meilleures activités, événements et restaurants de Casablanca.</p>
-          <div className="social-links">
-            <a href="#" aria-label="Facebook"><FaFacebook /></a>
-            <a href="#" aria-label="Twitter"><FaTwitter /></a>
-            <a href="#" aria-label="Instagram"><FaInstagram /></a>
-            <a href="#" aria-label="LinkedIn"><FaLinkedin /></a>
+          <div className={styles['social-links']}>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FaFacebook /></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><FaTwitter /></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><FaInstagram /></a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><FaLinkedin /></a>
           </div>
         </div>
 
-        <div className="footer-section">
+        <div className={styles['footer-section']}>
           <h4>Découvrir</h4>
           <ul>
             <li><Link to="/activities">Activités</Link></li>
@@ -28,7 +28,7 @@ const Footer = () => {
           </ul>
         </div>
 
-        <div className="footer-section">
+        <div className={styles['footer-section']}>
           <h4>Support</h4>
           <ul>
             <li><Link to="/help">Aide</Link></li>
@@ -38,7 +38,7 @@ const Footer = () => {
           </ul>
         </div>
 
-        <div className="footer-section">
+        <div className={styles['footer-section']}>
           <h4>Partenaires</h4>
           <ul>
             <li><Link to="/partner/register">Devenir partenaire</Link></li>
@@ -55,4 +55,4 @@ const Footer = () => {
   );
 };
 
-export default Footer; 
+export default Footer;

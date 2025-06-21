@@ -1,96 +1,90 @@
 import React from 'react';
-import { FaNewspaper, FaMapMarkerAlt, FaStar, FaCalendar } from 'react-icons/fa';
-import './New.css';
+import styles from './New.module.css';
+import GlobalCard from '../../components/GlobalCard';
 
-const New = () => {
-  const newItems = [
-    {
-      id: 1,
-      title: "Atelier de Poterie Traditionnelle",
-      type: "activity",
-      category: "Artisanat",
-      location: "Quartier des Habous",
-      rating: 4.6,
-      dateAdded: "2024-12-01",
-      image: "/images/pottery.jpg",
-      description: "Apprenez l'art de la poterie traditionnelle marocaine avec des artisans locaux."
-    },
-    {
-      id: 2,
-      title: "Restaurant Fusion Maroc-Japon",
-      type: "restaurant",
-      category: "Fusion",
-      location: "Marina",
-      rating: 4.5,
-      dateAdded: "2024-11-28",
-      image: "/images/fusion-restaurant.jpg",
-      description: "Une expérience culinaire unique mêlant saveurs marocaines et japonaises."
-    },
-    {
-      id: 3,
-      title: "Concert de Gnawa Moderne",
-      type: "event",
-      category: "Musique",
-      location: "Complexe Culturel",
-      rating: 4.7,
-      dateAdded: "2024-11-30",
-      image: "/images/gnawa.jpg",
-      description: "Découvrez la musique gnawa revisitée par des artistes contemporains."
-    },
-    {
-      id: 4,
-      title: "Escape Game Médina",
-      type: "activity",
-      category: "Loisir",
-      location: "Ancienne Médina",
-      rating: 4.4,
-      dateAdded: "2024-11-25",
-      image: "/images/escape-game.jpg",
-      description: "Un escape game immersif dans les ruelles mystérieuses de la médina."
-    }
-  ];
+const newsData = [
+  {
+    id: 1,
+    title: 'Ouverture d\'un nouveau musée',
+    category: 'Culture',
+    image: '/images/museum.jpg',
+    description: 'Un nouveau musée d\'art moderne ouvre ses portes au centre-ville.',
+    location: 'Centre-ville',
+    rating: 4.7,
+    duration: 'Permanent',
+    price: 0
+  },
+  {
+    id: 2,
+    title: 'Festival de Jazz',
+    category: 'Musique',
+    image: '/images/jazz.jpg',
+    description: 'Le festival annuel de jazz revient avec des artistes internationaux.',
+    location: 'Parc de la Ligue Arabe',
+    rating: 4.8,
+    duration: '3 jours',
+    price: 200
+  },
+  {
+    id: 3,
+    title: "Atelier de Poterie Traditionnelle",
+    category: "Artisanat",
+    image: "/images/pottery.jpg",
+    description: "Apprenez l'art de la poterie traditionnelle marocaine avec des artisans locaux.",
+    location: "Quartier des Habous",
+    rating: 4.6,
+    duration: "3 heures",
+    price: 150
+  },
+  {
+    id: 4,
+    title: "Restaurant Fusion Maroc-Japon",
+    category: "Gastronomie",
+    image: "/images/fusion-restaurant.jpg",
+    description: "Une expérience culinaire unique mêlant saveurs marocaines et japonaises.",
+    location: "Marina",
+    rating: 4.5,
+    duration: "2 heures",
+    price: 300
+  },
+  {
+    id: 5,
+    title: "Concert de Gnawa Moderne",
+    category: "Musique",
+    image: "/images/gnawa.jpg",
+    description: "Découvrez la musique gnawa revisitée par des artistes contemporains.",
+    location: "Complexe Culturel",
+    rating: 4.7,
+    duration: "2 heures",
+    price: 100
+  },
+  {
+    id: 6,
+    title: "Escape Game Médina",
+    category: "Loisir",
+    image: "/images/escape-game.jpg",
+    description: "Un escape game immersif dans les ruelles mystérieuses de la médina.",
+    location: "Ancienne Médina",
+    rating: 4.4,
+    duration: "1 heure",
+    price: 200
+  }
+];
 
-  return (
-    <div className="new-page">
-      <div className="new-header">
-        <h1>
-          <FaNewspaper /> Nouveautés à Casablanca
-        </h1>
-        <p>Découvrez les dernières nouveautés ajoutées à notre plateforme</p>
-      </div>
-
-      <div className="new-content">
-        <div className="new-grid">
-          {newItems.map((item, index) => (
-            <div key={item.id} className="new-item">
-              <div className="new-image">
-                <img src={item.image} alt={item.title} />
-                <div className="new-badge">Nouveau</div>
-                <div className="new-type">{item.type}</div>
-              </div>
-              <div className="new-info">
-                <h3>{item.title}</h3>
-                <p className="new-description">{item.description}</p>
-                <div className="new-meta">
-                  <span className="category">{item.category}</span>
-                  <span className="location">
-                    <FaMapMarkerAlt /> {item.location}
-                  </span>
-                  <span className="rating">
-                    <FaStar /> {item.rating}
-                  </span>
-                </div>
-                <div className="new-date">
-                  <FaCalendar /> Ajouté le {new Date(item.dateAdded).toLocaleDateString('fr-FR')}
-                </div>
-                <button className="new-btn">Découvrir</button>
-              </div>
-            </div>
-          ))}
-        </div>
+const New = () => (
+  <div className={styles['news-page']}>
+    <div className={styles['news-header']}>
+      <h1>Actualités</h1>
+      <p>Les dernières nouvelles et événements à Casablanca</p>
+    </div>
+    <div className={styles['news-container']}>
+      <div className={styles['news-list']}>
+        {newsData.map(item => (
+          <GlobalCard key={item.id} item={item} onReserve={() => {}} />
+        ))}
       </div>
     </div>
-  );
-};
+  </div>
+);
 
-export default New; 
+export default New;

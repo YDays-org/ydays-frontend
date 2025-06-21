@@ -1,0 +1,40 @@
+/* Favorites.module.css */
+.favorites-page {
+  width: 100%;
+  background: #f8fdfa;
+  min-height: 100vh;
+}
+.favorites-container {
+  max-width: 700px;
+  margin: 3rem auto 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(66, 171, 158, 0.08);
+  padding: 2.5rem 2rem 2rem 2rem;
+  text-align: center;
+}
+.favorites-container h1 {
+  color: #42AB9E;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+.favorites-placeholder {
+  margin-top: 2rem;
+  background: #e0f7f4;
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  color: #333;
+}
+.favorites-placeholder h2 {
+  color: #42AB9E;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+.favorites-placeholder ul {
+  list-style: disc inside;
+  padding-left: 0;
+  color: #333;
+}
+.favorites-placeholder li {
+  margin-bottom: 0.5rem;
+}

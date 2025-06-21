@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaMapMarkerAlt, FaStar, FaClock, FaUsers } from 'react-icons/fa';
-import './Home.css';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaMapMarkerAlt, FaStar, FaClock } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
+import styles from './Home.module.css';
 
 const Home = () => {
   const featuredActivities = [
@@ -54,45 +55,56 @@ const Home = () => {
     }
   ];
 
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleReserve = (id) => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      navigate(`/activity/${id}`);
+    }
+  };
+
   return (
-    <div className="home">
+    <div className={styles.home}>
       {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-content">
+      <section className={styles.hero}>
+        <div className={styles['hero-content']}>
           <h1>Découvrez Casablanca</h1>
           <p>Les meilleures activités, événements et restaurants de la ville blanche</p>
-          <div className="hero-search">
+          <div className={styles['hero-search']}>
             <input 
               type="text" 
               placeholder="Que cherchez-vous à Casablanca ?"
-              className="search-input"
+              className={styles['search-input']}
             />
-            <button className="search-button">Rechercher</button>
+            <button className={styles['search-button']}>Rechercher</button>
           </div>
         </div>
       </section>
 
       {/* Categories Section */}
-      <section className="categories">
+      <section className={styles.categories}>
         <h2>Explorez par catégorie</h2>
-        <div className="categories-grid">
-          <Link to="/activities" className="category-card">
-            <div className="category-icon">🎯</div>
+        <div className={styles['categories-grid']}>
+          <Link to="/activities" className={styles['category-card']}>
+            <div className={styles['category-icon']}>🎯</div>
             <h3>Activités</h3>
             <p>Découvrez des expériences uniques</p>
           </Link>
-          <Link to="/events" className="category-card">
-            <div className="category-icon">🎪</div>
+          <Link to="/events" className={styles['category-card']}>
+            <div className={styles['category-icon']}>🎪</div>
             <h3>Événements</h3>
             <p>Ne manquez aucun événement</p>
           </Link>
-          <Link to="/restaurants" className="category-card">
-            <div className="category-icon">🍽️</div>
+          <Link to="/restaurants" className={styles['category-card']}>
+            <div className={styles['category-icon']}>🍽️</div>
             <h3>Restaurants</h3>
             <p>Goûtez aux saveurs locales</p>
           </Link>
-          <Link to="/trending" className="category-card">
-            <div className="category-icon">🔥</div>
+          <Link to="/trending" className={styles['category-card']}>
+            <div className={styles['category-icon']}>🔥</div>
             <h3>Tendances</h3>
             <p>Ce qui fait le buzz</p>
           </Link>
@@ -100,63 +112,70 @@ const Home = () => {
       </section>
 
       {/* Featured Activities */}
-      <section className="featured-activities">
+      <section className={styles['featured-activities']}>
         <h2>Activités populaires</h2>
-        <div className="activities-grid">
+        <div className={styles['activities-grid']}>
           {featuredActivities.map(activity => (
-            <div key={activity.id} className="activity-card">
-              <div className="activity-image">
+            <div key={activity.id} className={styles['activity-card']}>
+              <div className={styles['activity-image']}>
                 <img src={activity.image} alt={activity.title} />
-                <div className="activity-category">{activity.category}</div>
+                <div className={styles['activity-category']}>{activity.category}</div>
               </div>
-              <div className="activity-content">
+              <div className={styles['activity-content']}>
                 <h3>{activity.title}</h3>
-                <div className="activity-meta">
-                  <span className="location">
+                <div className={styles['activity-meta']}>
+                  <span className={styles.location}>
                     <FaMapMarkerAlt /> {activity.location}
                   </span>
-                  <span className="rating">
+                  <span className={styles.rating}>
                     <FaStar /> {activity.rating}
                   </span>
                 </div>
-                <div className="activity-details">
-                  <span className="duration">
+                <div className={styles['activity-details']}>
+                  <span className={styles.duration}>
                     <FaClock /> {activity.duration}
                   </span>
-                  <span className="price">{activity.price}</span>
+                  <span className={styles.price}>{activity.price}</span>
                 </div>
-                <Link to={`/activity/${activity.id}`} className="book-button">
+                <Link
+                  to="#"
+                  className={styles['book-button']}
+                  onClick={e => {
+                    e.preventDefault();
+                    handleReserve(activity.id);
+                  }}
+                >
                   Réserver
                 </Link>
               </div>
             </div>
           ))}
         </div>
-        <div className="view-all">
-          <Link to="/activities" className="view-all-button">
+        <div className={styles['view-all']}>
+          <Link to="/activities" className={styles['view-all-button']}>
             Voir toutes les activités
           </Link>
         </div>
       </section>
 
       {/* Upcoming Events */}
-      <section className="upcoming-events">
+      <section className={styles['upcoming-events']}>
         <h2>Événements à venir</h2>
-        <div className="events-grid">
+        <div className={styles['events-grid']}>
           {upcomingEvents.map(event => (
-            <div key={event.id} className="event-card">
-              <div className="event-image">
+            <div key={event.id} className={styles['event-card']}>
+              <div className={styles['event-image']}>
                 <img src={event.image} alt={event.title} />
               </div>
-              <div className="event-content">
+              <div className={styles['event-content']}>
                 <h3>{event.title}</h3>
-                <div className="event-meta">
-                  <span className="date">{event.date}</span>
-                  <span className="location">
+                <div className={styles['event-meta']}>
+                  <span className={styles.date}>{event.date}</span>
+                  <span className={styles.location}>
                     <FaMapMarkerAlt /> {event.location}
                   </span>
                 </div>
-                <Link to={`/event/${event.id}`} className="event-button">
+                <Link to={`/event/${event.id}`} className={styles['event-button']}>
                   En savoir plus
                 </Link>
               </div>
@@ -166,12 +185,12 @@ const Home = () => {
       </section>
 
       {/* Map Section */}
-      <section className="map-section">
+      <section className={styles['map-section']}>
         <h2>Découvrez Casablanca sur la carte</h2>
-        <div className="map-container">
-          <div className="map-placeholder">
+        <div className={styles['map-container']}>
+          <div className={styles['map-placeholder']}>
             <p>Carte interactive en cours de chargement...</p>
-            <Link to="/map" className="map-button">
+            <Link to="/map" className={styles['map-button']}>
               Voir la carte complète
             </Link>
           </div>
@@ -181,4 +200,4 @@ const Home = () => {
   );
 };
 
-export default Home; 
+export default Home;

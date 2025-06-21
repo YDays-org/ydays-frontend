@@ -1,14 +1,14 @@
 import React from 'react';
-import './Favorites.css';
+import styles from './Favorites.module.css';
 
 const Favorites = () => {
   return (
-    <div className="favorites-page">
-      <div className="favorites-container">
+    <div className={styles['favorites-page']}>
+      <div className={styles['favorites-container']}>
         <h1>Mes Favoris</h1>
         <p>Page des favoris en cours de développement...</p>
         
-        <div className="favorites-placeholder">
+        <div className={styles['favorites-placeholder']}>
           <h2>Fonctionnalités prévues :</h2>
           <ul>
             <li>Liste des activités favorites</li>
@@ -23,4 +23,4 @@ const Favorites = () => {
   );
 };
 
-export default Favorites; 
+export default Favorites;

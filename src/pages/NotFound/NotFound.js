@@ -1,20 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaSearch, FaArrowLeft } from 'react-icons/fa';
-import './NotFound.css';
+import styles from './NotFound.module.css';
 
 const NotFound = () => {
   return (
-    <div className="not-found-page">
-      <div className="not-found-container">
-        <div className="not-found-content">
+    <div className={styles['notfound-page']}>
+      <div className={styles['notfound-container']}>
+        <div className={styles['notfound-content']}>
           <h1>404</h1>
           <h2>Page non trouvée</h2>
           <p>
             Désolé, la page que vous recherchez n'existe pas ou a été déplacée.
           </p>
           
-          <div className="not-found-actions">
+          <div className={styles['notfound-actions']}>
             <Link to="/" className="action-button primary">
               <FaHome /> Retour à l'accueil
             </Link>
@@ -34,4 +34,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound; 
+export default NotFound;

@@ -1,14 +1,14 @@
 import React from 'react';
-import './Partner.css';
+import styles from './Register.module.css';
 
 const PartnerRegister = () => {
   return (
-    <div className="partner-register-page">
-      <div className="partner-register-container">
+    <div className={styles['partner-register-page']}>
+      <div className={styles['partner-register-container']}>
         <h1>Devenir Partenaire</h1>
         <p>Formulaire d'inscription partenaire en cours de développement...</p>
         
-        <div className="partner-register-placeholder">
+        <div className={styles['partner-register-placeholder']}>
           <h2>Fonctionnalités prévues :</h2>
           <ul>
             <li>Formulaire d'inscription partenaire</li>
@@ -22,5 +22,4 @@ const PartnerRegister = () => {
   );
 };
 
-export default PartnerRegister; 
- 
+export default PartnerRegister;

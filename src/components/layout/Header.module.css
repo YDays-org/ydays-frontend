@@ -1,0 +1,108 @@
+/* Header.module.css */
+.header {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1.5px solid #e0f7f4;
+  box-shadow: 0 4px 24px rgba(66,171,158,0.10);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.2rem 2.5rem 1.2rem 2.5rem;
+}
+.logo h1 {
+  color: #42AB9E;
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: 1.5px;
+  text-shadow: 0 2px 8px rgba(66,171,158,0.08);
+}
+.nav-menu {
+  display: flex;
+  gap: 2.2rem;
+  background: rgba(255,255,255,0.5);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(66,171,158,0.06);
+  padding: 0.3rem 1.2rem;
+}
+.nav-menu a {
+  color: #333;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  font-size: 1.08rem;
+}
+.nav-menu a.active, .nav-menu a:hover {
+  background: #42AB9E;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(66,171,158,0.10);
+}
+.header-actions {
+  display: flex;
+  gap: 1.1rem;
+  align-items: center;
+}
+.header-actions button, .header-actions a {
+  background: rgba(255,255,255,0.7);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #42AB9E;
+  font-size: 1.3rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(66,171,158,0.10);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.header-actions button:hover, .header-actions a:hover {
+  background: #42AB9E;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(66,171,158,0.18);
+}
+.profile-btn {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  overflow: hidden;
+  border: 2px solid #42AB9E;
+  background: linear-gradient(120deg, #42AB9E 60%, #e0f7f4 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(66,171,158,0.13);
+  transition: border 0.2s, background 0.2s, color 0.2s;
+}
+.profile-btn:hover {
+  background: #fff;
+  color: #42AB9E;
+  border: 2px solid #42AB9E;
+}
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(66,171,158,0.10);
+}
+@media (max-width: 900px) {
+  .header-container {
+    padding: 1rem 1rem;
+  }
+  .nav-menu {
+    gap: 1.1rem;
+    padding: 0.2rem 0.5rem;
+  }
+}

@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
-import { FaMapMarkerAlt, FaStar, FaClock, FaFilter, FaMap, FaList, FaUtensils } from 'react-icons/fa';
-import './Restaurants.css';
+import { FaList, FaMap } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import styles from './Restaurants.module.css';
+import FilterSidebar from '../../components/FilterSidebar';
+import GlobalCard from '../../components/GlobalCard';
+import SearchBar from '../../components/SearchBar';
 
 const Restaurants = () => {
   const [viewMode, setViewMode] = useState('list');
   const [filters, setFilters] = useState({
-    cuisine: '',
+    category: '',
     priceRange: '',
-    rating: '',
-    location: ''
+    duration: '',
+    rating: ''
   });
+  const [searchResults, setSearchResults] = useState(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const restaurants = [
     {
@@ -57,161 +65,113 @@ const Restaurants = () => {
       openingHours: "12:00 - 22:00"
     }
   ];
-
-  const cuisines = [
-    "Toutes les cuisines",
-    "Marocaine",
-    "Marocaine traditionnelle",
-    "International",
-    "Méditerranéenne",
-    "Italienne",
-    "Française",
-    "Asiatique",
-    "Fast-food"
+  const categories = [
+    'Toutes les catégories',
+    'Gastronomie',
+    'Marocaine',
+    'Internationale',
+    'Asiatique',
+    'Italienne',
+    'Fast Food',
+    'Café',
+    'Autre'
   ];
 
+  const filteredRestaurants = restaurants.filter(restaurant => {
+    let match = true;
+    if (filters.category && filters.category !== 'Toutes les catégories') {
+      match = match && restaurant.category === filters.category;
+    }
+    if (filters.priceRange) {
+      const [min, max] = filters.priceRange.split('-');
+      if (max) {
+        match = match && restaurant.price >= parseInt(min) && restaurant.price <= parseInt(max);
+      } else if (min && min.endsWith('+')) {
+        match = match && restaurant.price >= parseInt(min);
+      }
+    }
+    if (filters.duration) {
+      if (filters.duration === '4h+') {
+        match = match && parseInt(restaurant.duration) >= 4;
+      } else {
+        match = match && restaurant.duration.startsWith(filters.duration);
+      }
+    }
+    if (filters.rating) {
+      match = match && restaurant.rating >= parseFloat(filters.rating);
+    }
+    return match;
+  });
+
   const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
+    setFilters(prev => ({ ...prev, [filterType]: value }));
+  };
+  const handleClearFilters = () => {
+    setFilters({ category: '', priceRange: '', duration: '', rating: '' });
+  };
+  const handleReserve = (id) => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      navigate(`/booking/restaurant/${id}`);
+    }
   };
 
   return (
-    <div className="restaurants-page">
-      <div className="restaurants-header">
-        <h1>Restaurants à Casablanca</h1>
-        <p>Découvrez les meilleures tables de la ville blanche</p>
+    <div className={styles['restaurants-page']}>
+      <div className={styles['restaurants-header']}>
+        <h1>Restaurants</h1>
+        <p>Découvrez les meilleurs restaurants à Casablanca</p>
       </div>
-
-      <div className="restaurants-container">
-        {/* Filters Sidebar */}
-        <aside className="filters-sidebar">
-          <div className="filters-header">
-            <FaFilter />
-            <h3>Filtres</h3>
-          </div>
-
-          <div className="filter-group">
-            <label>Cuisine</label>
-            <select 
-              value={filters.cuisine}
-              onChange={(e) => handleFilterChange('cuisine', e.target.value)}
-            >
-              {cuisines.map(cuisine => (
-                <option key={cuisine} value={cuisine}>
-                  {cuisine}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Prix</label>
-            <select 
-              value={filters.priceRange}
-              onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-            >
-              <option value="">Tous les prix</option>
-              <option value="$">Économique ($)</option>
-              <option value="$$">Modéré ($$)</option>
-              <option value="$$$">Élevé ($$$)</option>
-              <option value="$$$$">Luxe ($$$$)</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Note minimum</label>
-            <select 
-              value={filters.rating}
-              onChange={(e) => handleFilterChange('rating', e.target.value)}
-            >
-              <option value="">Toutes les notes</option>
-              <option value="4.5">4.5+ étoiles</option>
-              <option value="4.0">4.0+ étoiles</option>
-              <option value="3.5">3.5+ étoiles</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Quartier</label>
-            <select 
-              value={filters.location}
-              onChange={(e) => handleFilterChange('location', e.target.value)}
-            >
-              <option value="">Tous les quartiers</option>
-              <option value="medina">Médina</option>
-              <option value="anfa">Anfa</option>
-              <option value="marina">Marina</option>
-              <option value="centre">Centre-ville</option>
-              <option value="ain-diab">Ain Diab</option>
-            </select>
-          </div>
-
-          <button className="clear-filters">Effacer les filtres</button>
-        </aside>
-
-        {/* Main Content */}
-        <main className="restaurants-main">
-          <div className="restaurants-toolbar">
-            <div className="results-count">
-              {restaurants.length} restaurants trouvés
+      <div className={styles['restaurants-container']}>
+        <FilterSidebar
+          filters={filters}
+          categories={categories}
+          onChange={handleFilterChange}
+          onClear={handleClearFilters}
+        />
+        <main className={styles['restaurants-main']}>
+          <SearchBar
+            data={filteredRestaurants}
+            onSearch={setSearchResults}
+            placeholder="Rechercher un restaurant, une cuisine, un lieu..."
+          />
+          <div className={styles['restaurants-toolbar']}>
+            <div className={styles['results-count']}>
+              {(searchResults ? searchResults.length : filteredRestaurants.length)} restaurant{(searchResults ? searchResults.length : filteredRestaurants.length) > 1 ? 's' : ''} trouvé{(searchResults ? searchResults.length : filteredRestaurants.length) > 1 ? 's' : ''}
             </div>
-            <div className="view-controls">
-              <button 
-                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+            <div className={styles['view-controls']}>
+              <button
+                className={`${styles['view-btn']} ${viewMode === 'list' ? styles['active'] : ''}`}
                 onClick={() => setViewMode('list')}
+                aria-label="Vue liste"
               >
                 <FaList /> Liste
               </button>
-              <button 
-                className={`view-btn ${viewMode === 'map' ? 'active' : ''}`}
+              <button
+                className={`${styles['view-btn']} ${viewMode === 'map' ? styles['active'] : ''}`}
                 onClick={() => setViewMode('map')}
+                aria-label="Vue carte"
               >
                 <FaMap /> Carte
               </button>
             </div>
           </div>
-
           {viewMode === 'list' ? (
-            <div className="restaurants-list">
-              {restaurants.map(restaurant => (
-                <div key={restaurant.id} className="restaurant-item">
-                  <div className="restaurant-image">
-                    <img src={restaurant.image} alt={restaurant.name} />
-                    <div className="restaurant-cuisine">{restaurant.cuisine}</div>
-                  </div>
-                  <div className="restaurant-info">
-                    <h3>{restaurant.name}</h3>
-                    <p className="restaurant-description">{restaurant.description}</p>
-                    <div className="restaurant-meta">
-                      <span className="location">
-                        <FaMapMarkerAlt /> {restaurant.location}
-                      </span>
-                      <span className="rating">
-                        <FaStar /> {restaurant.rating}
-                      </span>
-                      <span className="cuisine">
-                        <FaUtensils /> {restaurant.cuisine}
-                      </span>
-                    </div>
-                    <div className="restaurant-details">
-                      <span className="opening-hours">
-                        <FaClock /> {restaurant.openingHours}
-                      </span>
-                      <span className="price-range">{restaurant.priceRange}</span>
-                    </div>
-                    <div className="restaurant-actions">
-                      <button className="menu-btn">Voir le menu</button>
-                      <button className="book-btn">Réserver une table</button>
-                    </div>
-                  </div>
+            <div className={styles['restaurants-list']}>
+              {(searchResults || filteredRestaurants).length === 0 ? (
+                <div style={{ color: '#42AB9E', fontWeight: 700, fontSize: '1.2rem', padding: '2.5rem' }}>
+                  Aucun restaurant ne correspond à vos filtres.
                 </div>
-              ))}
+              ) : (
+                (searchResults || filteredRestaurants).map(restaurant => (
+                  <GlobalCard key={restaurant.id} item={restaurant} onReserve={handleReserve} />
+                ))
+              )}
             </div>
           ) : (
-            <div className="map-view">
-              <div className="map-placeholder">
+            <div className={styles['map-view']}>
+              <div className={styles['map-placeholder']}>
                 <p>Carte interactive en cours de chargement...</p>
                 <p>Vue carte des restaurants</p>
               </div>
@@ -223,4 +183,4 @@ const Restaurants = () => {
   );
 };
 
-export default Restaurants; 
+export default Restaurants;

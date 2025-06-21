@@ -1,13 +1,13 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import './Layout.css';
+import styles from './Layout.module.css';
 
 const Layout = ({ children }) => {
   return (
-    <div className="layout">
+    <div className={styles.layout}>
       <Header />
-      <main className="main-content">
+      <main className={styles['main-content']}>
         {children}
       </main>
       <Footer />
@@ -15,4 +15,4 @@ const Layout = ({ children }) => {
   );
 };
 
-export default Layout; 
+export default Layout;

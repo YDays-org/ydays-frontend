@@ -1,0 +1,41 @@
+/* App.module.css */
+body {
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  background: linear-gradient(135deg, #e0f7f4 0%, #f8fdfa 100%);
+  color: #222;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+#root {
+  min-height: 100vh;
+  position: relative;
+}
+.glass-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 20% 30%, rgba(66,171,158,0.12) 0, transparent 60%),
+              radial-gradient(circle at 80% 70%, rgba(66,171,158,0.10) 0, transparent 60%);
+  filter: blur(32px);
+}
+a {
+  color: #42AB9E;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: #2e7c72;
+  text-decoration: underline;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  background: #e0f7f4;
+}
+::-webkit-scrollbar-thumb {
+  background: #42AB9E;
+  border-radius: 8px;
+}

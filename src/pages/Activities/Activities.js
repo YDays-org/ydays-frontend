@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { FaMapMarkerAlt, FaStar, FaClock, FaFilter, FaMap, FaList } from 'react-icons/fa';
-import './Activities.css';
+import { FaList, FaMap } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import styles from './Activities.module.css';
+import FilterSidebar from '../../components/FilterSidebar';
+import GlobalCard from '../../components/GlobalCard';
 
 const Activities = () => {
   const [viewMode, setViewMode] = useState('list');
@@ -10,6 +14,8 @@ const Activities = () => {
     duration: '',
     rating: ''
   });
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const activities = [
     {
@@ -68,6 +74,32 @@ const Activities = () => {
     "Bien-être"
   ];
 
+  const filteredActivities = activities.filter(activity => {
+    let match = true;
+    if (filters.category && filters.category !== 'Toutes les catégories') {
+      match = match && activity.category === filters.category;
+    }
+    if (filters.priceRange) {
+      const [min, max] = filters.priceRange.split('-');
+      if (max) {
+        match = match && activity.price >= parseInt(min) && activity.price <= parseInt(max);
+      } else if (min && min.endsWith('+')) {
+        match = match && activity.price >= parseInt(min);
+      }
+    }
+    if (filters.duration) {
+      if (filters.duration === '4h+') {
+        match = match && parseInt(activity.duration) >= 4;
+      } else {
+        match = match && activity.duration.startsWith(filters.duration);
+      }
+    }
+    if (filters.rating) {
+      match = match && activity.rating >= parseFloat(filters.rating);
+    }
+    return match;
+  });
+
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
       ...prev,
@@ -75,134 +107,66 @@ const Activities = () => {
     }));
   };
 
+  const handleClearFilters = () => {
+    setFilters({ category: '', priceRange: '', duration: '', rating: '' });
+  };
+
+  const handleReserve = (id) => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      navigate(`/booking/activity/${id}`);
+    }
+  };
+
   return (
-    <div className="activities-page">
-      <div className="activities-header">
-        <h1>Activités à Casablanca</h1>
-        <p>Découvrez des expériences uniques dans la ville blanche</p>
+    <div className={styles['activities-page']}>
+      <div className={styles['activities-header']}>
+        <h1>Activités</h1>
+        <p>Découvrez les meilleures activités à Casablanca</p>
       </div>
-
-      <div className="activities-container">
-        {/* Filters Sidebar */}
-        <aside className="filters-sidebar">
-          <div className="filters-header">
-            <FaFilter />
-            <h3>Filtres</h3>
-          </div>
-
-          <div className="filter-group">
-            <label>Catégorie</label>
-            <select 
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-            >
-              {categories.map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Prix</label>
-            <select 
-              value={filters.priceRange}
-              onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-            >
-              <option value="">Tous les prix</option>
-              <option value="0-100">Moins de 100 MAD</option>
-              <option value="100-200">100-200 MAD</option>
-              <option value="200-500">200-500 MAD</option>
-              <option value="500+">Plus de 500 MAD</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Durée</label>
-            <select 
-              value={filters.duration}
-              onChange={(e) => handleFilterChange('duration', e.target.value)}
-            >
-              <option value="">Toutes les durées</option>
-              <option value="1h">1 heure</option>
-              <option value="2h">2 heures</option>
-              <option value="3h">3 heures</option>
-              <option value="4h+">4+ heures</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Note minimum</label>
-            <select 
-              value={filters.rating}
-              onChange={(e) => handleFilterChange('rating', e.target.value)}
-            >
-              <option value="">Toutes les notes</option>
-              <option value="4.5">4.5+ étoiles</option>
-              <option value="4.0">4.0+ étoiles</option>
-              <option value="3.5">3.5+ étoiles</option>
-            </select>
-          </div>
-
-          <button className="clear-filters">Effacer les filtres</button>
-        </aside>
-
-        {/* Main Content */}
-        <main className="activities-main">
-          <div className="activities-toolbar">
-            <div className="results-count">
-              {activities.length} activités trouvées
+      <div className={styles['activities-container']}>
+        <FilterSidebar
+          filters={filters}
+          categories={categories}
+          onChange={handleFilterChange}
+          onClear={handleClearFilters}
+        />
+        <main className={styles['activities-main']}>
+          <div className={styles['activities-toolbar']}>
+            <div className={styles['results-count']}>
+              {filteredActivities.length} activité{filteredActivities.length > 1 ? 's' : ''} trouvée{filteredActivities.length > 1 ? 's' : ''}
             </div>
-            <div className="view-controls">
+            <div className={styles['view-controls']}>
               <button 
-                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                className={`${styles['view-btn']} ${viewMode === 'list' ? styles['active'] : ''}`}
                 onClick={() => setViewMode('list')}
+                aria-label="Vue liste"
               >
                 <FaList /> Liste
               </button>
               <button 
-                className={`view-btn ${viewMode === 'map' ? 'active' : ''}`}
+                className={`${styles['view-btn']} ${viewMode === 'map' ? styles['active'] : ''}`}
                 onClick={() => setViewMode('map')}
+                aria-label="Vue carte"
               >
                 <FaMap /> Carte
               </button>
             </div>
           </div>
-
           {viewMode === 'list' ? (
-            <div className="activities-list">
-              {activities.map(activity => (
-                <div key={activity.id} className="activity-item">
-                  <div className="activity-image">
-                    <img src={activity.image} alt={activity.title} />
-                    <div className="activity-category">{activity.category}</div>
-                  </div>
-                  <div className="activity-info">
-                    <h3>{activity.title}</h3>
-                    <p className="activity-description">{activity.description}</p>
-                    <div className="activity-meta">
-                      <span className="location">
-                        <FaMapMarkerAlt /> {activity.location}
-                      </span>
-                      <span className="rating">
-                        <FaStar /> {activity.rating}
-                      </span>
-                      <span className="duration">
-                        <FaClock /> {activity.duration}
-                      </span>
-                    </div>
-                    <div className="activity-price">
-                      <span className="price">{activity.price} MAD</span>
-                      <button className="book-btn">Réserver</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className={styles['activities-list']}>
+              {filteredActivities.length === 0 ? (
+                <div style={{color:'#42AB9E',fontWeight:700,fontSize:'1.2rem',padding:'2.5rem'}}>Aucune activité ne correspond à vos filtres.</div>
+              ) : (
+                filteredActivities.map(activity => (
+                  <GlobalCard key={activity.id} item={activity} onReserve={handleReserve} />
+                ))
+              )}
             </div>
           ) : (
-            <div className="map-view">
-              <div className="map-placeholder">
+            <div className={styles['map-view']}>
+              <div className={styles['map-placeholder']}>
                 <p>Carte interactive en cours de chargement...</p>
                 <p>Vue carte des activités</p>
               </div>
@@ -214,4 +178,4 @@ const Activities = () => {
   );
 };
 
-export default Activities; 
+export default Activities;

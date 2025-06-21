@@ -1,18 +1,17 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { FaMapMarkerAlt, FaStar, FaClock, FaUsers, FaHeart, FaShare } from 'react-icons/fa';
-import './ActivityDetail.css';
+import styles from './ActivityDetail.module.css';
 
 const ActivityDetail = () => {
   const { id } = useParams();
 
   return (
-    <div className="activity-detail-page">
-      <div className="activity-detail-container">
+    <div className={styles['activity-detail-page']}>
+      <div className={styles['activity-detail-container']}>
         <h1>Détails de l'activité #{id}</h1>
         <p>Page de détails de l'activité en cours de développement...</p>
         
-        <div className="activity-detail-placeholder">
+        <div className={styles['activity-detail-placeholder']}>
           <h2>Fonctionnalités prévues :</h2>
           <ul>
             <li>Galerie d'images et vidéos</li>
@@ -30,4 +29,4 @@ const ActivityDetail = () => {
   );
 };
 
-export default ActivityDetail; 
+export default ActivityDetail;

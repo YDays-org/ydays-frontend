@@ -1,14 +1,14 @@
 import React from 'react';
-import './Partner.css';
+import styles from './Dashboard.module.css';
 
 const PartnerDashboard = () => {
   return (
-    <div className="partner-dashboard-page">
-      <div className="partner-dashboard-container">
+    <div className={styles['partner-dashboard-page']}>
+      <div className={styles['partner-dashboard-container']}>
         <h1>Tableau de bord Partenaire</h1>
         <p>Espace partenaire en cours de développement...</p>
         
-        <div className="partner-dashboard-placeholder">
+        <div className={styles['partner-dashboard-placeholder']}>
           <h2>Fonctionnalités prévues :</h2>
           <ul>
             <li>Vue d'ensemble des réservations</li>
@@ -26,4 +26,4 @@ const PartnerDashboard = () => {
   );
 };
 
-export default PartnerDashboard; 
+export default PartnerDashboard;

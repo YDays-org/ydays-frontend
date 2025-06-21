@@ -144,14 +144,7 @@ npm run build
 ```
 
 ### Déploiement sur Vercel
-1. Connecter le repository GitHub à Vercel
-2. Configurer les variables d'environnement
-3. Déployer automatiquement
-
-### Déploiement sur Netlify
-1. Connecter le repository GitHub à Netlify
-2. Configurer le build command : `npm run build`
-3. Configurer le publish directory : `dist`
+Le repository GitHub est déjà connecté à Vercel. 
 
 ## 🤝 Contribution
 
@@ -161,39 +154,6 @@ npm run build
 3. Commiter les changements : `git commit -m "feat: description"`
 4. Pousser vers la branche : `git push origin feature/nom-feature`
 5. Créer une Pull Request
-
-### Standards de Code
-- **ESLint** : Configuration pour React
-- **Prettier** : Formatage automatique
-- **Conventions** : CamelCase pour les variables, PascalCase pour les composants
-
-## 📋 Roadmap
-
-### Phase 1 (Actuelle)
-- [x] Structure de base du projet
-- [x] Pages principales (Accueil, Activités, Événements, Restaurants)
-- [x] Système de navigation
-- [x] Pages de détail
-- [x] Système de réservation
-
-### Phase 2
-- [ ] Intégration API backend
-- [ ] Système d'authentification complet
-- [ ] Géolocalisation et cartes
-- [ ] Système de paiement
-
-### Phase 3
-- [ ] Application mobile (React Native)
-- [ ] Notifications push
-- [ ] Système de recommandations
-- [ ] Analytics avancés
-
-## 📞 Support
-
-Pour toute question ou support :
-- **Email** : support@casablanca-decouvertes.ma
-- **Documentation** : [Lien vers la documentation]
-- **Issues** : [GitHub Issues]
 
 ## 📄 Licence
 

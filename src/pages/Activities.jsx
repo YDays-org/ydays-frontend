@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPinIcon, StarIcon, FilterIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, StarIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
@@ -74,7 +74,7 @@ const Activities = () => {
           <div className="lg:w-1/4">
             <Card className="p-6">
               <div className="flex items-center mb-4">
-                <FilterIcon className="h-5 w-5 mr-2" />
+                <FunnelIcon className="h-5 w-5 mr-2" />
                 <h3 className="font-semibold">Filtres</h3>
               </div>
 

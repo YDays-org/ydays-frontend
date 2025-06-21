@@ -1,70 +1,148 @@
-# Getting Started with Create React App
+# Casablanca Activities Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Une plateforme web moderne pour la découverte et la réservation d'activités, événements et restaurants à Casablanca.
 
-## Available Scripts
+## 🎯 Objectif
 
-In the project directory, you can run:
+Développer une plateforme web conviviale permettant aux habitants et visiteurs de Casablanca de découvrir facilement une variété d'activités, d'événements culturels et de restaurants, et de pouvoir les réserver directement via la plateforme.
 
-### `npm start`
+## 🚀 Fonctionnalités
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Pour les utilisateurs
+- **Découverte** : Navigation intuitive avec catégories prédéfinies
+- **Recherche avancée** : Filtrage par date, prix, emplacement, type
+- **Géolocalisation** : Affichage des options à proximité
+- **Réservation** : Système de réservation intégré avec paiement sécurisé
+- **Profils utilisateurs** : Gestion des favoris et historique
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Pour les partenaires
+- **Tableau de bord** : Gestion des réservations et statistiques
+- **Gestion des annonces** : Création et modification d'offres
+- **Outils de promotion** : Mise en avant des offres
 
-### `npm test`
+## 🛠️ Technologies utilisées
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Frontend** : React 19, React Router DOM
+- **UI/UX** : React Icons, Styled Components, Framer Motion
+- **Maps** : React Leaflet, Leaflet
+- **Forms** : React Hook Form
+- **HTTP Client** : Axios
+- **Date handling** : Date-fns, React Datepicker
+- **Notifications** : React Hot Toast
+- **State Management** : React Query
 
-### `npm run build`
+## 📁 Structure du projet
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+src/
+├── components/           # Composants réutilisables
+│   ├── layout/          # Composants de mise en page
+│   │   ├── Header.js    # En-tête avec navigation
+│   │   ├── Footer.js    # Pied de page
+│   │   └── Layout.js    # Layout principal
+│   └── ui/              # Composants UI (à créer)
+├── pages/               # Pages de l'application
+│   ├── Home/            # Page d'accueil
+│   ├── Activities/      # Liste des activités
+│   ├── Events/          # Liste des événements
+│   ├── Restaurants/     # Liste des restaurants
+│   ├── Trending/        # Tendances
+│   ├── New/             # Nouveautés
+│   ├── Map/             # Carte interactive
+│   ├── Auth/            # Authentification
+│   │   ├── Login.js     # Connexion
+│   │   └── Register.js  # Inscription
+│   ├── Profile/         # Profil utilisateur
+│   ├── Favorites/       # Favoris
+│   ├── Booking/         # Réservation
+│   ├── Partner/         # Espace partenaire
+│   └── NotFound/        # Page 404
+├── services/            # Services API (à créer)
+├── hooks/               # Hooks personnalisés (à créer)
+├── utils/               # Utilitaires (à créer)
+├── styles/              # Styles globaux (à créer)
+└── App.js               # Composant principal avec routes
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🚀 Installation et démarrage
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. **Cloner le repository**
+   ```bash
+   git clone [url-du-repo]
+   cd ydays-frontend
+   ```
 
-### `npm run eject`
+2. **Installer les dépendances**
+   ```bash
+   npm install
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. **Démarrer le serveur de développement**
+   ```bash
+   npm start
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. **Ouvrir dans le navigateur**
+   ```
+   http://localhost:3000
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 📋 Routes principales
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- `/` - Page d'accueil
+- `/activities` - Liste des activités
+- `/events` - Liste des événements
+- `/restaurants` - Liste des restaurants
+- `/trending` - Tendances
+- `/new` - Nouveautés
+- `/map` - Carte interactive
+- `/login` - Connexion
+- `/register` - Inscription
+- `/profile` - Profil utilisateur
+- `/favorites` - Favoris
+- `/booking/:type/:id` - Réservation
+- `/partner/dashboard` - Tableau de bord partenaire
 
-## Learn More
+## 🎨 Design et UX
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- Interface moderne et responsive
+- Navigation intuitive
+- Filtres avancés
+- Vue liste et carte
+- Système de géolocalisation
+- Expérience utilisateur fluide
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🔒 Sécurité
 
-### Code Splitting
+- Authentification sécurisée
+- Protection des données sensibles
+- Validation des entrées
+- Sécurité des APIs
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 📱 Responsive Design
 
-### Analyzing the Bundle Size
+La plateforme est conçue pour être responsive et fonctionner sur :
+- Desktop
+- Tablette
+- Mobile
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🤝 Contribution
 
-### Making a Progressive Web App
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 📄 Licence
 
-### Advanced Configuration
+Ce projet est développé dans le cadre du concours YDAYS.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 👥 Équipe
 
-### Deployment
+- Développé par l'équipe YDAYS Frontend
+- Année universitaire 2024/2025
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Note** : Ce projet est en cours de développement. Certaines fonctionnalités sont encore en phase de conception.

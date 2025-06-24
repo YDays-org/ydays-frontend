@@ -35,6 +35,7 @@ function App() {
             <Route path="booking/:type/:id" element={<Booking />} />
           </Route>
 
+
           {/* Auth routes */}
           <Route path="/auth">
             <Route path="login" element={<Login />} />

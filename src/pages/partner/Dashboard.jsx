@@ -4,18 +4,20 @@ import {
   ChartBarIcon,
   CalendarIcon,
   UserGroupIcon,
-  StarIcon,
   PlusIcon,
   CogIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  BuildingStorefrontIcon
 } from '@heroicons/react/24/outline';
+
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import OverviewTab from './OverviewTab';
 import BookingsTab from './BookingsTab';
-import ListingsTab from './ListingsTab';
-import ReviewsTab from './ReviewsTab';
 import SettingsTab from './SettingsTab';
+import EventsManager from './EventsManager';
+import ActivitiesManager from './ActivitiesManager';
+import RestaurantsManager from './RestaurantsManager';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -47,10 +49,11 @@ const Dashboard = () => {
   ];
 
   const tabs = [
-    { id: 'overview', name: 'Vue d\'ensemble', icon: ChartBarIcon },
+    { id: 'overview', name: "Vue d'ensemble", icon: ChartBarIcon },
     { id: 'bookings', name: 'Réservations', icon: CalendarIcon },
-    { id: 'listings', name: 'Mes annonces', icon: PlusIcon },
-    { id: 'reviews', name: 'Avis clients', icon: StarIcon },
+    { id: 'events', name: 'Événements', icon: UserGroupIcon },
+    { id: 'activities', name: 'Activités', icon: PlusIcon },
+    { id: 'restaurants', name: 'Restaurants', icon: BuildingStorefrontIcon },
     { id: 'settings', name: 'Paramètres', icon: CogIcon }
   ];
 
@@ -118,11 +121,14 @@ const Dashboard = () => {
             {/* Bookings Tab */}
             {activeTab === 'bookings' && <BookingsTab />}
 
-            {/* Listings Tab */}
-            {activeTab === 'listings' && <ListingsTab />}
+            {/* Events Tab */}
+            {activeTab === 'events' && <EventsManager />}
 
-            {/* Reviews Tab */}
-            {activeTab === 'reviews' && <ReviewsTab />}
+            {/* Activities Tab */}
+            {activeTab === 'activities' && <ActivitiesManager />}
+
+            {/* Restaurants Tab */}
+            {activeTab === 'restaurants' && <RestaurantsManager />}
 
             {/* Settings Tab */}
             {activeTab === 'settings' && <SettingsTab />}

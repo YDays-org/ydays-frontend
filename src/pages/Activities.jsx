@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPinIcon, StarIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, StarIcon, FunnelIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
 const Activities = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = [
     { id: 'all', name: 'Toutes les catégories' },
@@ -52,12 +53,15 @@ const Activities = () => {
 
   const filteredActivities = activities.filter(activity => {
     const categoryMatch = selectedCategory === 'all' || activity.category === selectedCategory;
-    const priceMatch = priceRange === 'all' || 
+    const priceMatch = priceRange === 'all' ||
       (priceRange === 'low' && activity.price <= 100) ||
       (priceRange === 'medium' && activity.price > 100 && activity.price <= 250) ||
       (priceRange === 'high' && activity.price > 250);
-    
-    return categoryMatch && priceMatch;
+    const searchMatch = searchQuery === '' ||
+      activity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      activity.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return categoryMatch && priceMatch && searchMatch;
   });
 
   return (
@@ -78,8 +82,18 @@ const Activities = () => {
                 <h3 className="font-semibold">Filtres</h3>
               </div>
 
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Rechercher une activité..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
               {/* Category Filter */}
-              <div className="mb-6">
+              <div className="mb-6 mt-6">
                 <h4 className="font-medium mb-3">Catégorie</h4>
                 <div className="space-y-2">
                   {categories.map((category) => (

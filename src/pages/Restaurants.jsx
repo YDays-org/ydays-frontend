@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPinIcon, StarIcon, ClockIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, StarIcon, ClockIcon, PhoneIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
 const Restaurants = () => {
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const cuisines = [
     { id: 'all', name: 'Toutes les cuisines' },
@@ -59,7 +60,10 @@ const Restaurants = () => {
   const filteredRestaurants = restaurants.filter(restaurant => {
     const cuisineMatch = selectedCuisine === 'all' || restaurant.cuisine === selectedCuisine;
     const priceMatch = priceRange === 'all' || restaurant.priceRange === priceRange;
-    return cuisineMatch && priceMatch;
+    const searchMatch = searchQuery === '' || 
+      restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      restaurant.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return cuisineMatch && priceMatch && searchMatch;
   });
 
   return (
@@ -76,6 +80,20 @@ const Restaurants = () => {
           <div className="lg:w-1/4">
             <Card className="p-6">
               <h3 className="font-semibold mb-4">Filtres</h3>
+
+              {/* Search Bar */}
+              <div className="mb-6">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Rechercher un restaurant..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
 
               {/* Cuisine Filter */}
               <div className="mb-6">

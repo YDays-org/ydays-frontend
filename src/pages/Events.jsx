@@ -5,13 +5,16 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
 const Events = () => {
-  const [selectedDate, setSelectedDate] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const events = [
     {
       id: 1,
       title: 'Festival de Musique Gnaoua',
-      date: '2024-06-15',
+      date: '2025-06-15',
       time: '20:00',
       category: 'Musique',
       rating: 4.8,
@@ -23,7 +26,7 @@ const Events = () => {
     {
       id: 2,
       title: 'Exposition d\'Art Contemporain',
-      date: '2024-06-20',
+      date: '2025-06-20',
       time: '10:00',
       category: 'Art',
       rating: 4.6,
@@ -35,7 +38,7 @@ const Events = () => {
     {
       id: 3,
       title: 'Food Festival',
-      date: '2024-06-25',
+      date: '2025-06-25',
       time: '18:00',
       category: 'Gastronomie',
       rating: 4.9,
@@ -46,9 +49,37 @@ const Events = () => {
     }
   ];
 
-  const filteredEvents = selectedDate === 'all' 
-    ? events 
-    : events.filter(event => event.date === selectedDate);
+  // Get unique categories
+  const categories = ['all', ...new Set(events.map(event => event.category))];
+
+  const filteredEvents = events.filter(event => {
+    const categoryMatch = selectedCategory === 'all' || event.category === selectedCategory;
+    
+    // Search filtering logic
+    const searchMatch = searchQuery === '' || 
+      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.location.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Date filtering logic
+    let dateMatch = true;
+    if (dateFrom && dateTo) {
+      const eventDate = new Date(event.date);
+      const fromDate = new Date(dateFrom);
+      const toDate = new Date(dateTo);
+      dateMatch = eventDate >= fromDate && eventDate <= toDate;
+    } else if (dateFrom) {
+      const eventDate = new Date(event.date);
+      const fromDate = new Date(dateFrom);
+      dateMatch = eventDate >= fromDate;
+    } else if (dateTo) {
+      const eventDate = new Date(event.date);
+      const toDate = new Date(dateTo);
+      dateMatch = eventDate <= toDate;
+    }
+    
+    return categoryMatch && dateMatch && searchMatch;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -59,41 +90,103 @@ const Events = () => {
           <p className="text-gray-600">Découvrez les événements culturels et festifs de la ville</p>
         </div>
 
-        {/* Date Filter */}
+        {/* Filters */}
         <div className="mb-8">
           <Card className="p-6">
-            <div className="flex items-center mb-4">
-              <CalendarIcon className="h-5 w-5 mr-2" />
-              <h3 className="font-semibold">Filtrer par date</h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
+            {/* Header with Reset Button */}
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center">
+                <CalendarIcon className="h-5 w-5 mr-2 text-primary-600" />
+                <h3 className="font-semibold text-gray-900">Filtres</h3>
+              </div>
               <button
-                onClick={() => setSelectedDate('all')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedDate === 'all'
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                onClick={() => {
+                  setDateFrom('');
+                  setDateTo('');
+                  setSelectedCategory('all');
+                  setSearchQuery('');
+                }}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors border border-gray-300"
               >
-                Toutes les dates
+                Réinitialiser
               </button>
-              {events.map((event) => (
-                <button
-                  key={event.date}
-                  onClick={() => setSelectedDate(event.date)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedDate === event.date
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {new Date(event.date).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'short'
-                  })}
-                </button>
-              ))}
             </div>
+
+            {/* Search Input */}
+            <div className="mb-6">
+              <div className="flex items-center mb-3">
+                <svg className="h-4 w-4 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <h4 className="font-medium text-gray-900">Recherche</h4>
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Rechercher par titre, description ou lieu..."
+                className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors text-sm"
+              />
+            </div>
+
+            {/* Filters Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Date Range Filter */}
+              <div>
+                <div className="flex items-center mb-3">
+                  <CalendarIcon className="h-4 w-4 mr-2 text-primary-600" />
+                  <h4 className="font-medium text-gray-900">Période</h4>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors text-sm"
+                    placeholder="Date de début"
+                  />
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors text-sm"
+                    placeholder="Date de fin"
+                  />
+                </div>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <div className="flex items-center mb-3">
+                  <StarIcon className="h-4 w-4 mr-2 text-primary-600" />
+                  <h4 className="font-medium text-gray-900">Catégorie</h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        selectedCategory === category
+                          ? 'bg-primary-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                      }`}
+                    >
+                      {category === 'all' ? 'Toutes' : category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Date Range Feedback */}
+            {dateFrom && dateTo && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  Affichage des événements entre le {new Date(dateFrom).toLocaleDateString('fr-FR')} et le {new Date(dateTo).toLocaleDateString('fr-FR')}
+                </p>
+              </div>
+            )}
           </Card>
         </div>
 
@@ -157,7 +250,7 @@ const Events = () => {
 
         {filteredEvents.length === 0 && (
           <Card className="p-12 text-center">
-            <p className="text-gray-500">Aucun événement trouvé pour cette date</p>
+            <p className="text-gray-500">Aucun événement trouvé pour ces critères</p>
           </Card>
         )}
       </div>

@@ -45,7 +45,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
 
           {/* Partner routes */}
-          <Route path="/partner/*" element={<PartnerDashboard />} />
+          <Route path="/admin-dashboard/*" element={<PartnerDashboard />} />
 
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />

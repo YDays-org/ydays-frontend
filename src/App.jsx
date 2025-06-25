@@ -15,7 +15,7 @@ const Booking = lazy(() => import('./pages/Booking'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
-const PartnerDashboard = lazy(() => import('./pages/partner/Dashboard'));
+const PartnerDashboard = lazy(() => import('./pages/adminDashboard/Dashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function App() {

@@ -17,7 +17,7 @@ import BookingsTab from './BookingsTab';
 import SettingsTab from './SettingsTab';
 import EventsManager from './EventsManager';
 import ActivitiesManager from './ActivitiesManager';
-import RestaurantsManager from './RestaurantsManager';
+import RestaurantsManager from './restaurants/Restaurants';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');

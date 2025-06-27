@@ -18,6 +18,7 @@ import SettingsTab from './SettingsTab';
 import EventsManager from './EventsManager';
 import ActivitiesManager from './ActivitiesManager';
 import RestaurantsManager from './restaurants/Restaurants';
+import Events from './events/Events';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -122,7 +123,7 @@ const Dashboard = () => {
             {activeTab === 'bookings' && <BookingsTab />}
 
             {/* Events Tab */}
-            {activeTab === 'events' && <EventsManager />}
+            {activeTab === 'events' && <Events />}
 
             {/* Activities Tab */}
             {activeTab === 'activities' && <ActivitiesManager />}

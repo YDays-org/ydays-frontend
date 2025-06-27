@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import Layout from './components/layout/Layout';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import EventsAdd from './pages/adminDashboard/events/EventsAdd';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -45,7 +46,9 @@ function App() {
           <Route path="/profile" element={<Profile />} />
 
           {/* Partner routes */}
-          <Route path="/admin-dashboard/*" element={<PartnerDashboard />} />
+          <Route path="/admin-dashboard/*" element={<PartnerDashboard />} >
+              <Route path='events/add' element={<EventsAdd/>}></Route>
+          </Route>
 
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />

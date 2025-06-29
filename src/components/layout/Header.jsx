@@ -1,10 +1,37 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Bars3Icon, XMarkIcon, UserIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { 
+  Bars3Icon, 
+  XMarkIcon, 
+  UserIcon, 
+  MapPinIcon, 
+  ArrowRightOnRectangleIcon,
+  Cog6ToothIcon
+} from '@heroicons/react/24/outline';
+import { useAuth } from '../../hooks/useAuth';
+import useClickOutside from '../../hooks/useClickOutside';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, userProfile, logout } = useAuth();
+  
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+  
+  // Close the user menu when clicking outside
+  const userMenuRef = useClickOutside(() => {
+    if (isUserMenuOpen) setIsUserMenuOpen(false);
+  });
 
   const navigation = [
     { name: 'Accueil', href: '/' },
@@ -47,18 +74,76 @@ const Header = () => {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/auth/login"
-              className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Connexion
-            </Link>
-            <Link
-              to="/auth/register"
-              className="btn-primary"
-            >
-              S'inscrire
-            </Link>
+            {currentUser ? (
+              <div className="relative" ref={userMenuRef}>
+                <button 
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} 
+                  className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md"
+                >
+                  {userProfile?.photoURL ? (
+                    <img 
+                      src={userProfile.photoURL} 
+                      alt="Profile" 
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
+                      <UserIcon className="h-5 w-5 text-primary-600" />
+                    </div>
+                  )}
+                  <span className="text-sm font-medium">{userProfile?.displayName || currentUser.displayName || currentUser.email}</span>
+                </button>
+                
+                {/* Dropdown menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                    <Link
+                      to="/profile"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <UserIcon className="h-4 w-4 mr-2" />
+                      Mon profil
+                    </Link>
+                    {userProfile?.role === 'partner' && (
+                      <Link
+                        to="/partner/dashboard"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                        Tableau de bord
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
+                      Déconnexion
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/auth/login"
+                  className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  to="/auth/register"
+                  className="btn-primary"
+                >
+                  S'inscrire
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -95,20 +180,72 @@ const Header = () => {
                 </Link>
               ))}
               <div className="pt-4 space-y-2">
-                <Link
-                  to="/auth/login"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Connexion
-                </Link>
-                <Link
-                  to="/auth/register"
-                  className="block px-3 py-2 rounded-md text-base font-medium bg-primary-600 text-white hover:bg-primary-700"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  S'inscrire
-                </Link>
+                {currentUser ? (
+                  <>
+                    <div className="px-3 py-2 flex items-center space-x-2">
+                      {userProfile?.photoURL ? (
+                        <img 
+                          src={userProfile.photoURL} 
+                          alt="Profile" 
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
+                          <UserIcon className="h-5 w-5 text-primary-600" />
+                        </div>
+                      )}
+                      <span className="text-sm font-medium">{userProfile?.displayName || currentUser.displayName || currentUser.email}</span>
+                    </div>
+                    
+                    <Link
+                      to="/profile"
+                      className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <UserIcon className="h-5 w-5" />
+                      <span>Mon profil</span>
+                    </Link>
+                    
+                    {userProfile?.role === 'partner' && (
+                      <Link
+                        to="/partner/dashboard"
+                        className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Cog6ToothIcon className="h-5 w-5" />
+                        <span>Tableau de bord</span>
+                      </Link>
+                    )}
+                    
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full text-left flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-gray-50"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                      <span>Déconnexion</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/auth/login"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Connexion
+                    </Link>
+                    <Link
+                      to="/auth/register"
+                      className="block px-3 py-2 rounded-md text-base font-medium bg-primary-600 text-white hover:bg-primary-700"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      S'inscrire
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

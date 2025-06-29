@@ -1,0 +1,118 @@
+[
+  {
+    "id": 1,
+    "name": "Le Gourmet Parisien",
+    "description": "Restaurant gastronomique offrant une cuisine française traditionnelle avec une touche moderne. Ambiance élégante et service impeccable.",
+    "location": "123 Rue de la Paix, 75001 Paris",
+    "phone": "+33 1 42 86 12 34",
+    "openAt": "12:00",
+    "closeAt": "23:00",
+    "workingDays": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+    "specialite": "Cuisine française gastronomique",
+    "img": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=300&fit=crop",
+    "menu": [
+      {
+        "name": "Foie Gras Poêlé",
+        "price": 28.50,
+        "description": "Foie gras de canard poêlé, chutney de figues, pain brioché toasté"
+      },
+      {
+        "name": "Filet de Bœuf Rossini",
+        "price": 45.00,
+        "description": "Filet de bœuf, escalope de foie gras, sauce périgueux, pommes duchesse"
+      },
+      {
+        "name": "Soufflé au Chocolat",
+        "price": 16.00,
+        "description": "Soufflé chaud au chocolat noir, glace vanille bourbon"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Pizza Bella Napoli",
+    "description": "Authentique pizzeria napolitaine avec four à bois traditionnel. Pizzas préparées selon les méthodes ancestrales italiennes.",
+    "location": "456 Avenue des Champs-Élysées, 75008 Paris",
+    "phone": "+33 1 45 67 89 12",
+    "openAt": "11:30",
+    "closeAt": "23:30",
+    "workingDays": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
+    "specialite": "Pizza napolitaine traditionnelle",
+    "img": "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=500&h=300&fit=crop",
+    "menu": [
+      {
+        "name": "Margherita",
+        "price": 14.50,
+        "description": "Sauce tomate, mozzarella di bufala, basilic frais, huile d'olive"
+      },
+      {
+        "name": "Quattro Stagioni",
+        "price": 18.00,
+        "description": "Sauce tomate, mozzarella, jambon, champignons, artichauts, olives"
+      },
+      {
+        "name": "Diavola",
+        "price": 16.50,
+        "description": "Sauce tomate, mozzarella, salami piquant, piments"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Sushi Zen",
+    "description": "Restaurant japonais authentique spécialisé dans les sushis et sashimis. Poisson frais importé quotidiennement du Japon.",
+    "location": "789 Boulevard Saint-Germain, 75006 Paris",
+    "phone": "+33 1 43 25 67 89",
+    "openAt": "11:00",
+    "closeAt": "22:30",
+    "workingDays": ["Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+    "specialite": "Sushi et sashimi traditionnels",
+    "img": "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500&h=300&fit=crop",
+    "menu": [
+      {
+        "name": "Assortiment Sushi",
+        "price": 32.00,
+        "description": "12 pièces de sushi variés : saumon, thon, crevette, daurade"
+      },
+      {
+        "name": "Sashimi Mix",
+        "price": 28.50,
+        "description": "Assortiment de sashimi frais : saumon, thon, bar, crevette"
+      },
+      {
+        "name": "Maki California",
+        "price": 12.00,
+        "description": "Crevette, avocat, concombre, mayonnaise japonaise"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Le Bistrot Provençal",
+    "description": "Bistrot traditionnel du sud de la France proposant une cuisine provençale authentique avec des produits locaux et de saison.",
+    "location": "321 Rue de Rivoli, 75001 Paris",
+    "phone": "+33 1 40 20 30 40",
+    "openAt": "12:00",
+    "closeAt": "22:00",
+    "workingDays": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+    "specialite": "Cuisine provençale traditionnelle",
+    "img": "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=500&h=300&fit=crop",
+    "menu": [
+      {
+        "name": "Bouillabaisse",
+        "price": 35.00,
+        "description": "Soupe de poissons traditionnelle, rouille, croûtons, fromage râpé"
+      },
+      {
+        "name": "Ratatouille Niçoise",
+        "price": 18.50,
+        "description": "Légumes du sud mijotés : aubergines, courgettes, poivrons, tomates"
+      },
+      {
+        "name": "Tarte Tropézienne",
+        "price": 12.00,
+        "description": "Brioche fourrée à la crème mousseline, sucre perlé"
+      }
+    ]
+  }
+] 

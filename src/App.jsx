@@ -18,6 +18,11 @@ const Register = lazy(() => import('./pages/auth/Register'));
 const PartnerDashboard = lazy(() => import('./pages/adminDashboard/Dashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
+// restaurant
+const RestaurantsManager = lazy(() => import('./pages/adminDashboard/restaurants/Restaurants'));
+const AddRestaurant = lazy(() => import('./pages/adminDashboard/restaurants/RestaurantsAdd'));
+const RestaurantsUpdate = lazy(() => import('./pages/adminDashboard/restaurants/RestaurantsUpdate'));
+
 function App() {
   return (
     <Router>
@@ -45,7 +50,12 @@ function App() {
           <Route path="/profile" element={<Profile />} />
 
           {/* Partner routes */}
-          <Route path="/admin-dashboard/*" element={<PartnerDashboard />} />
+          <Route path="/admin-dashboard" element={<PartnerDashboard />}>
+            <Route index element={<PartnerDashboard />} />
+            <Route path="restaurants" element={<RestaurantsManager />} />
+            <Route path="restaurants/add" element={<AddRestaurant />} />
+            <Route path="restaurants/update/:id" element={<RestaurantsUpdate />} />
+          </Route>
 
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />

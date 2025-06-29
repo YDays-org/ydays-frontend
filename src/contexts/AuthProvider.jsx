@@ -2,16 +2,15 @@ import { useEffect, useState } from 'react';
 import { 
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  sendEmailVerification,
-  signInWithPopup,
-  GoogleAuthProvider
+  signOut as firebaseSignOut, 
+  signInWithPopup, 
+  GoogleAuthProvider 
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { storageService } from '../services/storageService';
 import { profileService } from '../services/profileService';
 import { AuthContext } from './AuthContext';
+import api from '../services/api'; // Import the API service
 
 const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -104,21 +103,46 @@ const AuthProvider = ({ children }) => {
     restoreSession();
   }, []);
 
+  // Sync user with database
+  const syncUserWithDatabase = async (user) => {
+    if (!user) return;
+
+    try {
+      const token = user?.accessToken || user?.stsTokenManager?.accessToken;
+      const userInfo = {
+        id: user.uid,
+        email: user.email,
+        fullName: user.displayName || '',
+        profilePictureUrl: user.photoURL || '',
+        emailVerified: user.emailVerified || false,
+        phoneNumber: user.phoneNumber || '',
+      };
+
+      await api.post('/api/auth/sync-user', userInfo, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log('User successfully synced with database.');
+    } catch (error) {
+      console.error('Error syncing user with database:', error);
+    }
+  };
+
   // Listen to authentication state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-     
         storeToken(user);
         storeUserInfo(user);
-        setCurrentUser(user);
+        setCurrentUser({ ...user });
         await syncUserProfile(user);
+        await syncUserWithDatabase(user); // Sync user with database
       } else {
         setCurrentUser(null);
         setUserProfile(null);
         localStorage.removeItem('authToken');
         localStorage.removeItem('authUser');
-        storageService.clearAll();
+        storageService.clearAuthData();
       }
 
       setIsLoading(false);
@@ -143,6 +167,10 @@ const AuthProvider = ({ children }) => {
       const user = userCredential.user;
       storeToken(user);
       storeUserInfo(user);
+
+      // Sync user with database
+      await syncUserWithDatabase(user);
+
       return user;
     } catch (error) {
       console.error('Sign in error:', error);
@@ -152,37 +180,46 @@ const AuthProvider = ({ children }) => {
 
   const signUp = async (email, password, userData = {}) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      // Send email verification
-      await sendEmailVerification(user);
-      
-      // Create user profile on server if additional data provided
-      if (Object.keys(userData).length > 0) {
-        try {
-          await profileService.updateUserProfile(userData);
-        } catch (profileError) {
-          console.error('Error creating user profile:', profileError);
-          // Don't fail the signup if profile creation fails
-        }
+      // Call the server API to create a new user
+      const response = await api.post('/api/auth/sign-up', {
+        email,
+        password,
+        ...userData,
+      });
+
+      if (response.data.success) {
+        console.log('User successfully signed up via server API.');
+        return response.data.user;
+      } else {
+        throw new Error(response.data.message || 'Failed to sign up.');
       }
-      
-      return user;
     } catch (error) {
-      console.error('Sign up error:', error);
+      console.error('Sign up error via server API:', error);
       throw error;
     }
   };
 
   const signOut = async () => {
     try {
+      // Sign out from Firebase
       await firebaseSignOut(auth);
+
+      // Clear local state
       setCurrentUser(null);
+      console.log('Setting currentUser to null after signOut');
       setUserProfile(null);
+
+      // Remove user data from localStorage
       localStorage.removeItem('authUser');
-      storageService.clearAll();
       localStorage.removeItem('authToken');
+
+      // Clear any cached data in storageService
+      storageService.clearAuthData();
+
+      // Redirect to home page
+      window.location.href = '/';
+
+      console.log('User successfully signed out.');
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
@@ -197,6 +234,10 @@ const AuthProvider = ({ children }) => {
       const user = result.user;
       storeToken(user);
       storeUserInfo(user);
+
+      // Sync user with database
+      await syncUserWithDatabase(user);
+
       return user;
     } catch (error) {
       console.error('Google sign-in error:', error);

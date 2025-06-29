@@ -16,12 +16,12 @@ const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, userProfile, logout } = useAuth();
+  const { currentUser, userProfile, signOut } = useAuth();
   
   // Handle logout
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
@@ -255,4 +255,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;

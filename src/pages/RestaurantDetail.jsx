@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { MapPinIcon, StarIcon, ClockIcon, PhoneIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { useAuth } from '../hooks/useAuth';
 
 const RestaurantDetail = () => {
-  const { id } = useParams();
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [guests, setGuests] = useState(2);
+  const { isAuthenticated } = useAuth();
 
   // Mock data
   const restaurant = {
@@ -76,12 +77,11 @@ const RestaurantDetail = () => {
     '12:00', '12:30', '13:00', '13:30', '19:00', '19:30', '20:00', '20:30', '21:00'
   ];
 
-  const handleReservation = () => {
-    if (!selectedDate || !selectedTime) {
-      alert('Veuillez sélectionner une date et une heure');
+  const handleReservationClick = () => {
+    if (!isAuthenticated()) {
+      alert('Vous devez être connecté pour réserver une table.');
       return;
     }
-    window.location.href = `/booking/restaurant/${id}?date=${selectedDate}&time=${selectedTime}&guests=${guests}`;
   };
 
   return (
@@ -293,13 +293,16 @@ const RestaurantDetail = () => {
                     </select>
                   </div>
 
-                  <Button
-                    onClick={handleReservation}
-                    className="w-full"
-                    disabled={!selectedDate || !selectedTime}
+                  {!selectedDate || !selectedTime ? (
+                    <p className="text-red-500 text-sm mb-2">Veuillez sélectionner une date et une heure.</p>
+                  ) : null}
+                  <Link
+                    to={selectedDate && selectedTime ? `/booking/restaurant?date=${selectedDate}&time=${selectedTime}` : "#"}
+                    onClick={handleReservationClick}
+                    className={`w-full block text-center py-2 px-4 rounded-md ${selectedDate && selectedTime ? 'bg-primary-600 text-white hover:bg-primary-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                   >
                     Réserver une table
-                  </Button>
+                  </Link>
                 </div>
 
                 <div className="mt-6 pt-6 border-t">
@@ -336,4 +339,4 @@ const RestaurantDetail = () => {
   );
 };
 
-export default RestaurantDetail; 
+export default RestaurantDetail;

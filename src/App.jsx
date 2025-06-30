@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import Layout from './components/layout/Layout';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import OverviewTab from './pages/adminDashboard/OverviewTab';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -17,6 +18,7 @@ const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const PartnerDashboard = lazy(() => import('./pages/adminDashboard/Dashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const SettingsTab = lazy(() => import('./pages/adminDashboard/settings/SettingsTab'));
 
 // restaurant
 const RestaurantsManager = lazy(() => import('./pages/adminDashboard/restaurants/Restaurants'));
@@ -32,6 +34,10 @@ const ActivitiesUpdate = lazy(() => import('./pages/adminDashboard/activities/Ac
 const EventsManager = lazy(() => import('./pages/adminDashboard/events/Events'));
 const AddEvent = lazy(() => import('./pages/adminDashboard/events/EventsAdd'));
 const EventsUpdate = lazy(() => import('./pages/adminDashboard/events/EventsUpdate'));
+
+// bookings
+const BookingsTab = lazy(() => import('./pages/adminDashboard/bookings/BookingsTab'));
+const BookingDetail = lazy(() => import('./pages/adminDashboard/bookings/BookingsConfirm'));
 
 function App() {
   return (
@@ -61,7 +67,15 @@ function App() {
 
           {/* Partner routes */}
           <Route path="/admin-dashboard" element={<PartnerDashboard />}>
-            <Route index element={<PartnerDashboard />} />
+            <Route index element={<OverviewTab />} />
+
+            {/* booking */}
+            <Route path="bookings" element={<BookingsTab />} />
+            <Route path="bookings/confirm" element={<BookingDetail />} />
+
+
+
+            {/* restaurants */}
             <Route path="restaurants" element={<RestaurantsManager />} />
             <Route path="restaurants/add" element={<AddRestaurant />} />
             <Route path="restaurants/update/:id" element={<RestaurantsUpdate />} />
@@ -75,6 +89,9 @@ function App() {
             <Route path="events" element={<EventsManager />} />
             <Route path="events/add" element={<AddEvent />} />
             <Route path="events/update/:id" element={<EventsUpdate />} />
+
+            {/* settings */}
+            <Route path="settings" element={<SettingsTab />} />
           </Route>
 
           {/* 404 route */}

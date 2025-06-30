@@ -1,0 +1,39 @@
+[
+  {
+    "id": 1,
+    "img": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500&h=300&fit=crop",
+    "title": "Yoga Matinal au Parc",
+    "description": "Séance de yoga en plein air pour bien démarrer la journée.",
+    "categories": ["Bien-être", "Sport"],
+    "prix": 15.00,
+    "duration": "1h30",
+    "phone": "+33 1 23 45 67 89",
+    "location": "Parc Monceau, 75008 Paris",
+    "inclus": ["Tapis de yoga", "Bouteille d'eau"],
+    "nonInclus": ["Tenue de sport"],
+    "programme": [
+      {"heure": "08:00", "activite": "Accueil et installation"},
+      {"heure": "08:15", "activite": "Séance de yoga"},
+      {"heure": "09:15", "activite": "Relaxation et échanges"}
+    ]
+  },
+  {
+    "id": 2,
+    "img": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=500&h=300&fit=crop",
+    "title": "Atelier Cuisine Italienne",
+    "description": "Apprenez à préparer des plats italiens traditionnels avec un chef.",
+    "categories": ["Cuisine", "Atelier"],
+    "prix": 40.00,
+    "duration": "3h",
+    "phone": "+33 1 98 76 54 32",
+    "location": "12 Rue de Rome, 75008 Paris",
+    "inclus": ["Ingrédients", "Tablier", "Recettes imprimées"],
+    "nonInclus": ["Transport"],
+    "programme": [
+      {"heure": "14:00", "activite": "Accueil et présentation"},
+      {"heure": "14:15", "activite": "Préparation des antipasti"},
+      {"heure": "15:00", "activite": "Préparation du plat principal"},
+      {"heure": "16:00", "activite": "Dégustation et échanges"}
+    ]
+  }
+] 

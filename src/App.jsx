@@ -23,6 +23,16 @@ const RestaurantsManager = lazy(() => import('./pages/adminDashboard/restaurants
 const AddRestaurant = lazy(() => import('./pages/adminDashboard/restaurants/RestaurantsAdd'));
 const RestaurantsUpdate = lazy(() => import('./pages/adminDashboard/restaurants/RestaurantsUpdate'));
 
+// activities
+const ActivitiesManager = lazy(() => import('./pages/adminDashboard/activities/Activities'));
+const AddActivity = lazy(() => import('./pages/adminDashboard/activities/ActivitiesAdd'));
+const ActivitiesUpdate = lazy(() => import('./pages/adminDashboard/activities/ActivitiesUpdate'));
+
+// events
+const EventsManager = lazy(() => import('./pages/adminDashboard/events/Events'));
+const AddEvent = lazy(() => import('./pages/adminDashboard/events/EventsAdd'));
+const EventsUpdate = lazy(() => import('./pages/adminDashboard/events/EventsUpdate'));
+
 function App() {
   return (
     <Router>
@@ -55,6 +65,16 @@ function App() {
             <Route path="restaurants" element={<RestaurantsManager />} />
             <Route path="restaurants/add" element={<AddRestaurant />} />
             <Route path="restaurants/update/:id" element={<RestaurantsUpdate />} />
+
+            {/* activites */}
+            <Route path="activities" element={<ActivitiesManager />} />
+            <Route path="activities/add" element={<AddActivity />} />
+            <Route path="activities/update/:id" element={<ActivitiesUpdate />} />
+
+            {/* events */}
+            <Route path="events" element={<EventsManager />} />
+            <Route path="events/add" element={<AddEvent />} />
+            <Route path="events/update/:id" element={<EventsUpdate />} />
           </Route>
 
           {/* 404 route */}

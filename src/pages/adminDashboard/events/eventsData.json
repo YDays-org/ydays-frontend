@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "img": "https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?w=500&h=300&fit=crop",
+    "title": "Concert Jazz au Théâtre",
+    "description": "Soirée jazz avec des artistes internationaux dans un cadre prestigieux.",
+    "categories": ["Musique", "Concert"],
+    "day": "Vendredi 12 Juillet 2024",
+    "time": "20:00",
+    "location": "Théâtre du Châtelet, 75001 Paris",
+    "price": 35.00,
+    "phone": "+33 1 23 45 67 89",
+    "website": "https://theatrechatelet.fr",
+    "programme": [
+      {"heure": "20:00", "detail": "Ouverture des portes"},
+      {"heure": "20:30", "detail": "Première partie : Trio local"},
+      {"heure": "21:15", "detail": "Tête d'affiche : Jazz International"},
+      {"heure": "22:30", "detail": "Fin du concert"}
+    ]
+  },
+  {
+    "id": 2,
+    "img": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&h=300&fit=crop",
+    "title": "Salon du Livre",
+    "description": "Rencontres avec des auteurs, dédicaces et ateliers pour petits et grands.",
+    "categories": ["Culture", "Salon"],
+    "day": "Samedi 20 Juillet 2024",
+    "time": "10:00 - 18:00",
+    "location": "Parc des Expositions, 75015 Paris",
+    "price": 8.00,
+    "phone": "+33 1 98 76 54 32",
+    "website": "",
+    "programme": [
+      {"heure": "10:00", "detail": "Ouverture du salon"},
+      {"heure": "11:00", "detail": "Atelier jeunesse"},
+      {"heure": "14:00", "detail": "Conférence : L'avenir du livre"},
+      {"heure": "16:00", "detail": "Séance de dédicaces"},
+      {"heure": "18:00", "detail": "Fermeture"}
+    ]
+  }
+] 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   ChartBarIcon,
   CalendarIcon,
@@ -12,14 +12,6 @@ import {
 
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import OverviewTab from './OverviewTab';
-import BookingsTab from './BookingsTab';
-import SettingsTab from './SettingsTab';
-import EventsManager from './EventsManager';
-import ActivitiesManager from './ActivitiesManager';
-import RestaurantsManager from './restaurants/Restaurants';
-import RestaurantsAdd from './restaurants/RestaurantsAdd';
-import RestaurantsUpdate from './restaurants/RestaurantsUpdate';
 import Sidebar from './layout/Sidebar';
 import Header from './layout/Header';
 
@@ -105,16 +97,7 @@ const Dashboard = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <Routes>
-              <Route index element={<OverviewTab stats={stats} recentBookings={recentBookings} />} />
-              <Route path="bookings" element={<BookingsTab />} />
-              <Route path="events" element={<EventsManager />} />
-              <Route path="activities" element={<ActivitiesManager />} />
-              <Route path="restaurants" element={<RestaurantsManager />} />
-              <Route path="restaurants/add" element={<RestaurantsAdd />} />
-              <Route path="restaurants/update/:id" element={<RestaurantsUpdate />} />
-              <Route path="settings" element={<SettingsTab />} />
-            </Routes>
+            <Outlet />
           </div>
         </div>
       </div>

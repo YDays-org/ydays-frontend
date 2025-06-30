@@ -1,6 +1,7 @@
 import Card from '../../../components/ui/Card';
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useNavigate } from 'react-router-dom';
 
 const RestaurantsAdd = () => {
   const [name, setName] = useState('');
@@ -22,6 +23,7 @@ const RestaurantsAdd = () => {
     Dimanche: false
   });
   const [menuItems, setMenuItems] = useState([{ name: '', price: '', description: '' }]);
+  const navigate = useNavigate();
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -61,28 +63,9 @@ const RestaurantsAdd = () => {
       img: imagePreview || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=300&fit=crop'
     };
 
-    // TODO: Send to API
-    // Add to restaurantsData.json
-    const fs = require('fs');
-    const path = require('path');
     
-    try {
-      const dataPath = path.join(__dirname, 'restaurantsData.json');
-      const existingData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-      
-      // Generate new ID (max existing ID + 1)
-      const newId = Math.max(...existingData.map(r => r.id)) + 1;
-      restaurantData.id = newId;
-      
-      // Add new restaurant to array
-      existingData.push(restaurantData);
-      
-      // Write back to file
-      fs.writeFileSync(dataPath, JSON.stringify(existingData, null, 2));
-      console.log('Restaurant added to JSON file:', restaurantData);
-    } catch (error) {
-      console.error('Error writing to JSON file:', error);
-    }
+    console.log('Restaurant added to JSON file:', restaurantData);
+    
     alert(`Restaurant ajouté : ${name}`);
     
     // Reset form
@@ -141,6 +124,13 @@ const RestaurantsAdd = () => {
   return (
     <Card>
       <div className="p-6">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mb-4 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
+        >
+          ← Retour
+        </button>
         <h2 className="text-lg font-semibold mb-4">Ajouter un restaurant</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

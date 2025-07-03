@@ -1,7 +1,41 @@
 import Card from '../../components/ui/Card';
 import { CalendarIcon, ChartBarIcon, StarIcon, PlusIcon } from '@heroicons/react/24/outline';
 
-const OverviewTab = ({ stats, recentBookings }) => (
+const stats = {
+  totalBookings: 120,
+  totalRevenue: 35000,
+  averageRating: 4.7,
+  activeListings: 15,
+};
+
+const recentBookings = [
+  {
+    id: 1,
+    activity: 'Randonnée dans l’Atlas',
+    customer: 'Alice Dupont',
+    date: '2024-06-01',
+    status: 'confirmed',
+    amount: 500,
+  },
+  {
+    id: 2,
+    activity: 'Visite guidée de Marrakech',
+    customer: 'Jean Martin',
+    date: '2024-06-02',
+    status: 'pending',
+    amount: 300,
+  },
+  {
+    id: 3,
+    activity: 'Cours de cuisine marocaine',
+    customer: 'Fatima Zahra',
+    date: '2024-06-03',
+    status: 'confirmed',
+    amount: 400,
+  },
+];
+
+const OverviewTab = () => (
   <div className="space-y-6">
     {/* Stats Cards */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -13,7 +47,7 @@ const OverviewTab = ({ stats, recentBookings }) => (
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Réservations totales</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.totalBookings}</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.totalBookings || 0}</p>
             </div>
           </div>
         </div>
@@ -26,7 +60,7 @@ const OverviewTab = ({ stats, recentBookings }) => (
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Revenus totaux</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.totalRevenue} MAD</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.totalRevenue || 0} MAD</p>
             </div>
           </div>
         </div>
@@ -39,7 +73,7 @@ const OverviewTab = ({ stats, recentBookings }) => (
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Note moyenne</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.averageRating}</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.averageRating || 0}</p>
             </div>
           </div>
         </div>
@@ -52,7 +86,7 @@ const OverviewTab = ({ stats, recentBookings }) => (
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Annonces actives</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.activeListings}</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.activeListings || 0}</p>
             </div>
           </div>
         </div>

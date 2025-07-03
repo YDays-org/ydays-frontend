@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import { useAuth } from '../../hooks/useAuth';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signin, signInWithGoogle, signInWithFacebook, resetPassword } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -13,6 +15,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -56,20 +60,86 @@ const Login = () => {
     }
 
     setIsLoading(true);
+    setErrors({});
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In real app, this would authenticate with backend
-      console.log('Login attempt:', formData);
-      
+      await signin(formData.email, formData.password);
       // Redirect to home page after successful login
       navigate('/');
     } catch (error) {
       console.error('Login error:', error);
+      
+      // Handle specific Firebase errors
+      let errorMessage = 'Une erreur est survenue lors de la connexion';
+      
+      switch (error.code) {
+        case 'auth/user-not-found':
+          errorMessage = 'Aucun compte trouvé avec cette adresse email';
+          break;
+        case 'auth/wrong-password':
+          errorMessage = 'Mot de passe incorrect';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Adresse email invalide';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'Ce compte a été désactivé';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Trop de tentatives de connexion. Veuillez réessayer plus tard';
+          break;
+        default:
+          errorMessage = error.message || errorMessage;
+      }
+      
+      setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      await signInWithGoogle();
+      navigate('/');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      setErrors({ general: 'Erreur lors de la connexion avec Google' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    try {
+      setIsLoading(true);
+      await signInWithFacebook();
+      navigate('/');
+    } catch (error) {
+      console.error('Facebook sign-in error:', error);
+      setErrors({ general: 'Erreur lors de la connexion avec Facebook' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      setErrors({ email: 'Veuillez saisir votre adresse email pour réinitialiser le mot de passe' });
+      return;
+    }
+
+    try {
+      setIsResettingPassword(true);
+      await resetPassword(formData.email);
+      setMessage('Un email de réinitialisation a été envoyé à votre adresse email');
+      setErrors({});
+    } catch (error) {
+      console.error('Password reset error:', error);
+      setErrors({ general: 'Erreur lors de l\'envoi de l\'email de réinitialisation' });
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -85,6 +155,18 @@ const Login = () => {
 
         <Card>
           <div className="p-8">
+            {errors.general && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{errors.general}</p>
+              </div>
+            )}
+            
+            {message && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-600">{message}</p>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -153,9 +235,14 @@ const Login = () => {
                 </div>
 
                 <div className="text-sm">
-                  <Link to="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                    Mot de passe oublié ?
-                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={isResettingPassword}
+                    className="font-medium text-primary-600 hover:text-primary-500 disabled:opacity-50"
+                  >
+                    {isResettingPassword ? 'Envoi...' : 'Mot de passe oublié ?'}
+                  </button>
                 </div>
               </div>
 
@@ -192,7 +279,9 @@ const Login = () => {
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                 >
                   <span className="sr-only">Sign in with Google</span>
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -205,7 +294,9 @@ const Login = () => {
 
                 <button
                   type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                  onClick={handleFacebookSignIn}
+                  disabled={isLoading}
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                 >
                   <span className="sr-only">Sign in with Facebook</span>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

@@ -1,7 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import Layout from './components/layout/Layout';
 import LoadingSpinner from './components/ui/LoadingSpinner';
+import AuthProvider from './contexts/AuthProvider';
+import { useAuth } from './hooks/useAuth';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -18,40 +20,75 @@ const Register = lazy(() => import('./pages/auth/Register'));
 const PartnerDashboard = lazy(() => import('./pages/adminDashboard/Dashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
+// Protected Route component that checks authentication
+const ProtectedRoute = ({ children }) => {
+  const { currentUser, loading, isAuthenticated } = useAuth();
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  console.log('ProtectedRoute currentUser:', currentUser);
+  console.log('ProtectedRoute isAuthenticated:', isAuthenticated());
+  // Check both currentUser and isAuthenticated function
+  if (!currentUser && !isAuthenticated()) {
+    return <Navigate to="/auth/login" replace />;
+  }
+  
+  return children;
+};
+
 function App() {
   return (
-    <Router>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="activities" element={<Activities />} />
-            <Route path="events" element={<Events />} />
-            <Route path="restaurants" element={<Restaurants />} />
-            <Route path="activity/:id" element={<ActivityDetail />} />
-            <Route path="event/:id" element={<EventDetail />} />
-            <Route path="restaurant/:id" element={<RestaurantDetail />} />
-            <Route path="booking/:type/:id" element={<Booking />} />
-          </Route>
+    <AuthProvider>
+      <Router>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="activities" element={<Activities />} />
+              <Route path="events" element={<Events />} />
+              <Route path="restaurants" element={<Restaurants />} />
+              <Route path="activity/:id" element={<ActivityDetail />} />
+              <Route path="event/:id" element={<EventDetail />} />
+              <Route path="restaurant/:id" element={<RestaurantDetail />} />
+              <Route path="booking/:type/:id" element={
+                <ProtectedRoute>
+                  <Booking />
+                </ProtectedRoute>
+              } />
+            </Route>
 
-          {/* Auth routes */}
-          <Route path="/auth">
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-          </Route>
 
-          {/* Protected user routes */}
-          <Route path="/profile" element={<Profile />} />
+            {/* Auth routes */}
+            <Route path="/auth">
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+            </Route>
 
-          {/* Partner routes */}
-          <Route path="/admin-dashboard/*" element={<PartnerDashboard />} />
+            {/* Protected user routes */}
+            <Route path="/profile" element={<Layout/>} >
+              <Route path="" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+            </Route>
 
-          {/* 404 route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-    </Router>
+            {/* Partner routes */}
+            <Route path="/admin-dashboard/*" element={
+              <ProtectedRoute>
+                <PartnerDashboard />
+              </ProtectedRoute>
+            } />
+
+            {/* 404 route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </Router>
+    </AuthProvider>
+
   );
 }
 

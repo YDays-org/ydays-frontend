@@ -3,14 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import { useAuth } from '../../hooks/useAuth';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { signup, signInWithGoogle, signInWithFacebook } = useAuth();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     password: '',
     confirmPassword: ''
   });
@@ -19,6 +20,7 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [message, setMessage] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -38,12 +40,8 @@ const Register = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'Le prénom est requis';
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Le nom est requis';
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Le nom complet est requis';
     }
 
     if (!formData.email) {
@@ -52,10 +50,10 @@ const Register = () => {
       newErrors.email = 'L\'email n\'est pas valide';
     }
 
-    if (!formData.phone) {
-      newErrors.phone = 'Le téléphone est requis';
-    } else if (!/^(\+212|0)[5-7][0-9]{8}$/.test(formData.phone)) {
-      newErrors.phone = 'Le numéro de téléphone n\'est pas valide';
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = 'Le téléphone est requis';
+    } else if (!/^(\+212|0)[5-7][0-9]{8}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = 'Le numéro de téléphone n\'est pas valide';
     }
 
     if (!formData.password) {
@@ -88,18 +86,74 @@ const Register = () => {
     }
 
     setIsLoading(true);
+    setErrors({});
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await signup(formData.email, formData.password, {
+        fullName: formData.fullName,
+        phoneNumber: formData.phoneNumber
+      });
       
-      // In real app, this would register with backend
-      console.log('Registration attempt:', formData);
+      // Show success message
+      setMessage('Compte créé avec succès ! Un email de vérification a été envoyé.');
       
       // Redirect to home page after successful registration
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     } catch (error) {
       console.error('Registration error:', error);
+      
+      // Handle errors from API or Firebase
+      let errorMessage = 'Une erreur est survenue lors de l\'inscription';
+      
+      if (error.code) {
+        // Firebase error codes
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'Cette adresse email est déjà utilisée';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Adresse email invalide';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'Le mot de passe est trop faible';
+            break;
+          default:
+            errorMessage = error.message || errorMessage;
+        }
+      } else {
+        // Likely an API error
+        errorMessage = error.message || 'Erreur du serveur lors de l\'inscription';
+      }
+      
+      setErrors({ general: errorMessage });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsLoading(true);
+      await signInWithGoogle();
+      navigate('/');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      setErrors({ general: 'Erreur lors de l\'inscription avec Google' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    try {
+      setIsLoading(true);
+      await signInWithFacebook();
+      navigate('/');
+    } catch (error) {
+      console.error('Facebook sign-in error:', error);
+      setErrors({ general: 'Erreur lors de l\'inscription avec Facebook' });
     } finally {
       setIsLoading(false);
     }
@@ -117,47 +171,37 @@ const Register = () => {
 
         <Card>
           <div className="p-8">
+            {errors.general && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{errors.general}</p>
+              </div>
+            )}
+            
+            {message && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-600">{message}</p>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Prénom *
-                  </label>
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    autoComplete="given-name"
-                    required
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className={`input-field ${errors.firstName ? 'border-red-500 focus:ring-red-500' : ''}`}
-                    placeholder="Votre prénom"
-                  />
-                  {errors.firstName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nom *
-                  </label>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    autoComplete="family-name"
-                    required
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className={`input-field ${errors.lastName ? 'border-red-500 focus:ring-red-500' : ''}`}
-                    placeholder="Votre nom"
-                  />
-                  {errors.lastName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
-                  )}
-                </div>
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom complet *
+                </label>
+                <input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  className={`input-field ${errors.fullName ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  placeholder="Votre nom complet"
+                />
+                {errors.fullName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
+                )}
               </div>
 
               <div>
@@ -181,22 +225,22 @@ const Register = () => {
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
                   Téléphone *
                 </label>
                 <input
-                  id="phone"
-                  name="phone"
+                  id="phoneNumber"
+                  name="phoneNumber"
                   type="tel"
                   autoComplete="tel"
                   required
-                  value={formData.phone}
+                  value={formData.phoneNumber}
                   onChange={handleInputChange}
-                  className={`input-field ${errors.phone ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  className={`input-field ${errors.phoneNumber ? 'border-red-500 focus:ring-red-500' : ''}`}
                   placeholder="+212 6 12 34 56 78"
                 />
-                {errors.phone && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                {errors.phoneNumber && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
                 )}
               </div>
 
@@ -327,7 +371,9 @@ const Register = () => {
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                 >
                   <span className="sr-only">Sign up with Google</span>
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -340,7 +386,9 @@ const Register = () => {
 
                 <button
                   type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                  onClick={handleFacebookSignIn}
+                  disabled={isLoading}
+                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                 >
                   <span className="sr-only">Sign up with Facebook</span>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

@@ -1,8 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import Layout from './components/layout/Layout';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import OverviewTab from './pages/adminDashboard/OverviewTab';
+import AuthProvider from './contexts/AuthProvider';
+import { useAuth } from './hooks/useAuth';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -39,66 +41,107 @@ const EventsUpdate = lazy(() => import('./pages/adminDashboard/events/EventsUpda
 const BookingsTab = lazy(() => import('./pages/adminDashboard/bookings/BookingsTab'));
 const BookingDetail = lazy(() => import('./pages/adminDashboard/bookings/BookingsConfirm'));
 
+// Protected Route component that checks authentication
+const ProtectedRoute = ({ children }) => {
+  const { currentUser, loading, isAuthenticated } = useAuth();
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  console.log('ProtectedRoute currentUser:', currentUser);
+  console.log('ProtectedRoute isAuthenticated:', isAuthenticated());
+  // Check both currentUser and isAuthenticated function
+  if (!currentUser && !isAuthenticated()) {
+    return <Navigate to="/auth/login" replace />;
+  }
+  
+  return children;
+};
+
 function App() {
   return (
-    <Router>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="activities" element={<Activities />} />
-            <Route path="events" element={<Events />} />
-            <Route path="restaurants" element={<Restaurants />} />
-            <Route path="activity/:id" element={<ActivityDetail />} />
-            <Route path="event/:id" element={<EventDetail />} />
-            <Route path="restaurant/:id" element={<RestaurantDetail />} />
-            <Route path="booking/:type/:id" element={<Booking />} />
-          </Route>
+<AuthProvider>
+  <Router>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="activities" element={<Activities />} />
+          <Route path="events" element={<Events />} />
+          <Route path="restaurants" element={<Restaurants />} />
+          <Route path="activity/:id" element={<ActivityDetail />} />
+          <Route path="event/:id" element={<EventDetail />} />
+          <Route path="restaurant/:id" element={<RestaurantDetail />} />
+          <Route
+            path="booking/:type/:id"
+            element={
+              <ProtectedRoute>
+                <Booking />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
 
-          {/* Auth routes */}
-          <Route path="/auth">
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-          </Route>
+        {/* Auth routes */}
+        <Route path="/auth">
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+        </Route>
 
-          {/* Protected user routes */}
-          <Route path="/profile" element={<Profile />} />
+        {/* Protected user routes */}
+        <Route path="/profile" element={<Layout />}>
+          <Route
+            index
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
 
-          {/* Partner routes */}
-          <Route path="/admin-dashboard" element={<PartnerDashboard />}>
-            <Route index element={<OverviewTab />} />
+        {/* Partner routes */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute>
+              <PartnerDashboard />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<OverviewTab />} />
 
-            {/* booking */}
-            <Route path="bookings" element={<BookingsTab />} />
-            <Route path="bookings/confirm" element={<BookingDetail />} />
+          {/* booking */}
+          <Route path="bookings" element={<BookingsTab />} />
+          <Route path="bookings/confirm" element={<BookingDetail />} />
 
+          {/* restaurants */}
+          <Route path="restaurants" element={<RestaurantsManager />} />
+          <Route path="restaurants/add" element={<AddRestaurant />} />
+          <Route path="restaurants/update/:id" element={<RestaurantsUpdate />} />
 
+          {/* activities */}
+          <Route path="activities" element={<ActivitiesManager />} />
+          <Route path="activities/add" element={<AddActivity />} />
+          <Route path="activities/update/:id" element={<ActivitiesUpdate />} />
 
-            {/* restaurants */}
-            <Route path="restaurants" element={<RestaurantsManager />} />
-            <Route path="restaurants/add" element={<AddRestaurant />} />
-            <Route path="restaurants/update/:id" element={<RestaurantsUpdate />} />
+          {/* events */}
+          <Route path="events" element={<EventsManager />} />
+          <Route path="events/add" element={<AddEvent />} />
+          <Route path="events/update/:id" element={<EventsUpdate />} />
 
-            {/* activites */}
-            <Route path="activities" element={<ActivitiesManager />} />
-            <Route path="activities/add" element={<AddActivity />} />
-            <Route path="activities/update/:id" element={<ActivitiesUpdate />} />
+          {/* settings */}
+          <Route path="settings" element={<SettingsTab />} />
+        </Route>
 
-            {/* events */}
-            <Route path="events" element={<EventsManager />} />
-            <Route path="events/add" element={<AddEvent />} />
-            <Route path="events/update/:id" element={<EventsUpdate />} />
+        {/* 404 route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
+  </Router>
+</AuthProvider>
 
-            {/* settings */}
-            <Route path="settings" element={<SettingsTab />} />
-          </Route>
-
-          {/* 404 route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-    </Router>
   );
 }
 

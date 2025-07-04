@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const EventsAdd = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [categories, setCategories] = useState('');
+  const [categorie, setCategorie] = useState('');
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
@@ -41,30 +41,30 @@ const EventsAdd = () => {
     const eventData = {
       title,
       description,
-      categories: categories.split(',').map(c => c.trim()),
+      categorie,
       day,
       time,
       location,
-      price: parseFloat(price),
+      price: parseFloat(price) || "price",
       phone,
       website,
       programme: programme.filter(p => p.heure && p.detail),
       img: imagePreview || 'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?w=500&h=300&fit=crop'
     };
     console.log('Event added:', eventData);
-    alert(`Événement ajouté : ${title}`);
-    setTitle('');
-    setDescription('');
-    setCategories('');
-    setDay('');
-    setTime('');
-    setLocation('');
-    setPrice('');
-    setPhone('');
-    setWebsite('');
-    setProgramme([{ heure: '', detail: '' }]);
-    setImageFile(null);
-    setImagePreview(null);
+    // alert(`Événement ajouté : ${title}`);
+    // setTitle('');
+    // setDescription('');
+    // setCategorie('');
+    // setDay('');
+    // setTime('');
+    // setLocation('');
+    // setPrice('');
+    // setPhone('');
+    // setWebsite('');
+    // setProgramme([{ heure: '', detail: '' }]);
+    // setImageFile(null);
+    // setImagePreview(null);
   };
 
   const removeImage = () => {
@@ -115,11 +115,11 @@ const EventsAdd = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 mb-1">Catégories (séparées par des virgules)</label>
+            <label className="block text-gray-700 mb-1">Catégorie</label>
             <input
               type="text"
-              value={categories}
-              onChange={(e) => setCategories(e.target.value)}
+              value={categorie}
+              onChange={(e) => setCategorie(e.target.value)}
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Ex: Musique, Culture, Salon..."
             />

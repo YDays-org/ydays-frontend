@@ -55,9 +55,9 @@ const RestaurantsAdd = () => {
       description,
       location,
       phone,
-      openAt,
-      closeAt,
-      workingDays: selectedDays,
+      openAt: openAt || 'openAt',
+      closeAt: closeAt || 'closeAt',
+      workingDays: selectedDays || "workingDays",
       specialite,
       menu: menuItems.filter(item => item.name && item.price),
       img: imagePreview || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&h=300&fit=crop'
@@ -66,28 +66,28 @@ const RestaurantsAdd = () => {
     
     console.log('Restaurant added to JSON file:', restaurantData);
     
-    alert(`Restaurant ajouté : ${name}`);
+    // alert(`Restaurant ajouté : ${name}`);
     
-    // Reset form
-    setName('');
-    setDescription('');
-    setLocation('');
-    setPhone('');
-    setOpenAt('12:00');
-    setCloseAt('22:00');
-    setSpecialite('');
-    setImageFile(null);
-    setImagePreview(null);
-    setWorkingDays({
-      Lundi: false,
-      Mardi: false,
-      Mercredi: false,
-      Jeudi: false,
-      Vendredi: false,
-      Samedi: false,
-      Dimanche: false
-    });
-    setMenuItems([{ name: '', price: '', description: '' }]);
+    // // Reset form
+    // setName('');
+    // setDescription('');
+    // setLocation('');
+    // setPhone('');
+    // setOpenAt('12:00');
+    // setCloseAt('22:00');
+    // setSpecialite('');
+    // setImageFile(null);
+    // setImagePreview(null);
+    // setWorkingDays({
+    //   Lundi: false,
+    //   Mardi: false,
+    //   Mercredi: false,
+    //   Jeudi: false,
+    //   Vendredi: false,
+    //   Samedi: false,
+    //   Dimanche: false
+    // });
+    // setMenuItems([{ name: '', price: '', description: '' }]);
   };
 
   const removeImage = () => {

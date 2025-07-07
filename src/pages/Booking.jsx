@@ -1,10 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { CalendarIcon, ClockIcon, MapPinIcon, UserIcon } from '@heroicons/react/24/outline';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import api from '../services/api';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'fallback_publishable_key');
 
 const Booking = () => {
+  return (
+    <Elements stripe={stripePromise}>
+      <BookingContent />
+    </Elements>
+  );
+};
+
+const BookingContent = () => {
   const { type, id } = useParams();
   const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
@@ -15,12 +28,15 @@ const Booking = () => {
     specialRequests: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const stripe = useStripe();
+  const elements = useElements();
 
   // Get booking details from URL params
   const date = searchParams.get('date');
   const time = searchParams.get('time');
   const participants = searchParams.get('participants') || searchParams.get('tickets') || searchParams.get('guests');
-
+console.log('Booking type:', type, 'ID:', id, 'Date:', date, 'Time:', time, 'Participants:', participants);
   // Mock data based on booking type
   const bookingDetails = {
     activity: {
@@ -56,23 +72,54 @@ const Booking = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setPaymentError('');
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('Vous devez être connecté pour effectuer un paiement.');
+      setIsLoading(false);
+      return;
+    }
 
-    // In real app, this would send data to backend
-    console.log('Booking submitted:', {
-      type,
-      id,
-      date,
-      time,
-      participants,
-      ...formData
-    });
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-    setIsLoading(false);
-    // Redirect to confirmation page
-    alert('Réservation confirmée ! Vous recevrez un email de confirmation.');
+    try {
+      const totalAmount = Math.round(totalPrice * 100);
+      // Step 1: Create a payment intent
+      const paymentResponse = await api.post('/api/booking/payment', {
+        amount: totalAmount, // Amount in cents
+        currency: 'mad', // Moroccan Dirham
+      });
+
+      const { clientSecret } = paymentResponse.data;
+
+      // Step 2: Confirm payment
+      const paymentResult = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        },
+      });
+
+      if (paymentResult.error) {
+        console.error(paymentResult.error);
+        setPaymentError('Le paiement a échoué. Veuillez vérifier vos informations de paiement.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Step 3: Create reservation
+      await api.post('/api/booking/reservations', {
+        scheduleId: id,
+        numParticipants: participants,
+      });
+
+      alert('Réservation créée avec succès !');
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      alert('Une erreur est survenue lors du processus de réservation.');
+      setIsLoading(false);
+    }
   };
 
   const totalPrice = currentBooking.price * parseInt(participants || 1);
@@ -165,6 +212,35 @@ const Booking = () => {
                       placeholder="Toute demande spéciale ou information supplémentaire..."
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Informations de paiement *
+                    </label>
+                    <div className="border rounded-md p-3 bg-white shadow-sm">
+                      <CardElement
+                        className="input-field"
+                        options={{
+                          style: {
+                            base: {
+                              fontSize: '16px',
+                              color: '#32325d',
+                              fontFamily: 'Arial, sans-serif',
+                              '::placeholder': {
+                                color: '#aab7c4',
+                              },
+                            },
+                            invalid: {
+                              color: '#fa755a',
+                              iconColor: '#fa755a',
+                            },
+                          },
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-red-500 text-sm mt-2" id="payment-error">{paymentError}</div>
 
                   <div className="flex items-center justify-between pt-6 border-t">
                     <Link to={`/${type}/${id}`}>
@@ -267,4 +343,4 @@ const Booking = () => {
   );
 };
 
-export default Booking; 
+export default Booking;

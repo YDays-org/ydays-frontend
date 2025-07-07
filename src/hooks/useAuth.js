@@ -14,7 +14,8 @@ export const useAuth = () => {
     signUp,
     signOut,
     signInWithGoogle,
-    syncUserProfile
+    syncUserProfile,
+    resetPassword
   } = useContext(AuthContext);
 
   return {
@@ -25,7 +26,8 @@ export const useAuth = () => {
     signUp,
     signOut,
     signInWithGoogle,
-    syncUserProfile
+    syncUserProfile,
+    resetPassword
   };
 };
 

@@ -4,7 +4,7 @@ import {
   signInWithEmailAndPassword, 
   signOut as firebaseSignOut, 
   signInWithPopup, 
-  GoogleAuthProvider 
+  GoogleAuthProvider
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { storageService } from '../services/storageService';
@@ -226,6 +226,18 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  // Reset password for a user
+  const resetPassword = async (email) => {
+    try {
+      // Make API call to request password reset
+      const response = await api.post('/api/auth/reset-password', { email });
+      return response.data;
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
+  };
+
   // Sign in with Google
   const signInWithGoogle = async () => {
     try {
@@ -245,6 +257,8 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  // Facebook sign-in functionality has been removed
+
   // Check if the user is authenticated
   const isAuthenticated = () => {
     const token = localStorage.getItem('authToken');
@@ -263,7 +277,8 @@ const AuthProvider = ({ children }) => {
     signOut,
     syncUserProfile,
     isAuthenticated,
-    signInWithGoogle
+    signInWithGoogle,
+    resetPassword // Expose resetPassword function
   };
 
   return (

@@ -13,4 +13,5 @@ export const AuthContext = createContext({
   signOut: () => {},
   syncUserProfile: () => {},
   isAuthenticated: () => false,
+  resetPassword: () => {},
 });

@@ -18,6 +18,7 @@ const Booking = lazy(() => import('./pages/Booking'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const PartnerDashboard = lazy(() => import('./pages/adminDashboard/Dashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const SettingsTab = lazy(() => import('./pages/adminDashboard/settings/SettingsTab'));
@@ -87,6 +88,11 @@ function App() {
         <Route path="/auth">
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="forgot-password" element={
+            <Suspense fallback={<LoadingSpinner />}>
+              <ForgotPassword />
+            </Suspense>
+          } />
         </Route>
 
         {/* Protected user routes */}

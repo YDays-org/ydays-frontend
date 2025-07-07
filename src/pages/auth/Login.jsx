@@ -18,10 +18,15 @@ const Login = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // For email, automatically trim the value to prevent whitespace issues
+    const processedValue = name === 'email' ? value.trim() : value;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
+    
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -61,36 +66,20 @@ const Login = () => {
     setErrors({});
 
     try {
-      await signIn(formData.email, formData.password);
+      // Trim email and password to remove any leading/trailing whitespace
+      const sanitizedEmail = formData.email.trim();
+      const sanitizedPassword = formData.password;
+      
+      console.log(`Attempting login with email: ${sanitizedEmail}`);
+      await signIn(sanitizedEmail, sanitizedPassword);
+      
       // Redirect to home page after successful login
       navigate('/');
     } catch (error) {
       console.error('Login error:', error);
       
-      // Handle specific Firebase errors
-      let errorMessage = 'Une erreur est survenue lors de la connexion';
-      
-      switch (error.code) {
-        case 'auth/user-not-found':
-          errorMessage = 'Aucun compte trouvé avec cette adresse email';
-          break;
-        case 'auth/wrong-password':
-          errorMessage = 'Mot de passe incorrect';
-          break;
-        case 'auth/invalid-email':
-          errorMessage = 'Adresse email invalide';
-          break;
-        case 'auth/user-disabled':
-          errorMessage = 'Ce compte a été désactivé';
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Trop de tentatives de connexion. Veuillez réessayer plus tard';
-          break;
-        default:
-          errorMessage = error.message || errorMessage;
-      }
-      
-      setErrors({ general: errorMessage });
+      // The error message comes directly from the signIn function now
+      setErrors({ general: error.message || 'Une erreur est survenue lors de la connexion' });
     } finally {
       setIsLoading(false);
     }
@@ -129,6 +118,8 @@ const Login = () => {
                 <p className="text-sm text-red-600">{errors.general}</p>
               </div>
             )}
+            
+            
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -262,4 +253,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

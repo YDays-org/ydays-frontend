@@ -163,8 +163,10 @@ const AuthProvider = ({ children }) => {
   // Authentication functions
   const signIn = async (email, password) => {
     try {
+      console.log(`Attempting to sign in with email: ${email}`);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
       storeToken(user);
       storeUserInfo(user);
 
@@ -174,7 +176,27 @@ const AuthProvider = ({ children }) => {
       return user;
     } catch (error) {
       console.error('Sign in error:', error);
-      throw error;
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      
+      // Provide more specific error messages based on Firebase error codes
+      if (error.code === 'auth/invalid-credential') {
+        throw new Error('Email ou mot de passe incorrect.');
+      } else if (error.code === 'auth/user-not-found') {
+        throw new Error('Aucun compte trouvé avec cette adresse email.');
+      } else if (error.code === 'auth/wrong-password') {
+        throw new Error('Mot de passe incorrect.');
+      } else if (error.code === 'auth/too-many-requests') {
+        throw new Error('Trop de tentatives de connexion. Veuillez réessayer plus tard.');
+      } else if (error.code === 'auth/user-disabled') {
+        throw new Error('Ce compte a été désactivé.');
+      } else if (error.code === 'auth/invalid-email') {
+        throw new Error('Format d\'email invalide.');
+      } else if (error.code === 'auth/network-request-failed') {
+        throw new Error('Problème de connexion réseau. Vérifiez votre connexion internet.');
+      } else {
+        throw new Error(`Une erreur est survenue lors de la connexion. (${error.code})`);
+      }
     }
   };
 

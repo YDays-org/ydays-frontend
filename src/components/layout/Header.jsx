@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Bars3Icon, 
-  XMarkIcon, 
-  UserIcon, 
-  MapPinIcon, 
+import {
+  Bars3Icon,
+  XMarkIcon,
+  UserIcon,
+  MapPinIcon,
   ArrowRightOnRectangleIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
@@ -17,7 +17,7 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, userProfile, signOut } = useAuth();
-  
+
   // Handle logout
   const handleLogout = async () => {
     try {
@@ -27,7 +27,7 @@ const Header = () => {
       console.error('Logout error:', error);
     }
   };
-  
+
   // Close the user menu when clicking outside
   const userMenuRef = useClickOutside(() => {
     if (isUserMenuOpen) setIsUserMenuOpen(false);
@@ -61,11 +61,10 @@ const Header = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive(item.href)
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive(item.href)
                     ? 'text-primary-600 bg-primary-50'
                     : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 {item.name}
               </Link>
@@ -76,14 +75,14 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             {currentUser ? (
               <div className="relative" ref={userMenuRef}>
-                <button 
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} 
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md"
                 >
                   {userProfile?.photoURL ? (
-                    <img 
-                      src={userProfile.photoURL} 
-                      alt="Profile" 
+                    <img
+                      src={userProfile.photoURL}
+                      alt="Profile"
                       className="h-8 w-8 rounded-full object-cover"
                     />
                   ) : (
@@ -93,26 +92,29 @@ const Header = () => {
                   )}
                   <span className="text-sm font-medium">{userProfile?.displayName || currentUser.displayName || currentUser.email}</span>
                 </button>
-                
+
                 {/* Dropdown menu */}
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-                    <Link
-                      to="/profile"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <UserIcon className="h-4 w-4 mr-2" />
-                      Mon profil
-                    </Link>
-                    {userProfile?.role === 'partner' && (
+
+                    {currentUser?.email === 'yassineova@gmail.com' ? (
                       <Link
-                        to="/partner/dashboard"
+                        to="/admin-dashboard"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         <Cog6ToothIcon className="h-4 w-4 mr-2" />
                         Tableau de bord
+                      </Link>
+
+                    ) : (
+                      <Link
+                        to="/profile"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <UserIcon className="h-4 w-4 mr-2" />
+                        Mon profil
                       </Link>
                     )}
                     <button
@@ -169,11 +171,10 @@ const Header = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive(item.href)
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${isActive(item.href)
                       ? 'text-primary-600 bg-primary-50'
                       : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
-                  }`}
+                    }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -184,9 +185,9 @@ const Header = () => {
                   <>
                     <div className="px-3 py-2 flex items-center space-x-2">
                       {userProfile?.photoURL ? (
-                        <img 
-                          src={userProfile.photoURL} 
-                          alt="Profile" 
+                        <img
+                          src={userProfile.photoURL}
+                          alt="Profile"
                           className="h-8 w-8 rounded-full object-cover"
                         />
                       ) : (
@@ -196,7 +197,7 @@ const Header = () => {
                       )}
                       <span className="text-sm font-medium">{userProfile?.displayName || currentUser.displayName || currentUser.email}</span>
                     </div>
-                    
+
                     <Link
                       to="/profile"
                       className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
@@ -205,10 +206,9 @@ const Header = () => {
                       <UserIcon className="h-5 w-5" />
                       <span>Mon profil</span>
                     </Link>
-                    
-                    {userProfile?.role === 'partner' && (
+                    {currentUser?.email === 'yassineova@gmail.com' && (
                       <Link
-                        to="/partner/dashboard"
+                        to="/admin-dashboard"
                         className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
                         onClick={() => setIsMenuOpen(false)}
                       >
@@ -216,7 +216,7 @@ const Header = () => {
                         <span>Tableau de bord</span>
                       </Link>
                     )}
-                    
+
                     <button
                       onClick={() => {
                         handleLogout();

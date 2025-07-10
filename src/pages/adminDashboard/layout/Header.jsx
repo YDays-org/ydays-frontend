@@ -11,8 +11,13 @@ const Header = ({ onLogout }) => (
           <p className="text-sm text-gray-500 mt-1">Gérez vos activités, réservations et annonces en toute simplicité</p>
         </div>
       </div>
-      {/* Logout Button */}
-      <div className="mt-4 sm:mt-0">
+      {/* Back to home and Logout Button */}
+      <div className="mt-4 sm:mt-0 flex gap-2">
+        <Button
+          onClick={() => { window.location.href = '/'; }}
+        >
+          Retour à l'accueil
+        </Button>
         <Button
           className="bg-red-500 text-white hover:bg-red-600"
           onClick={onLogout}

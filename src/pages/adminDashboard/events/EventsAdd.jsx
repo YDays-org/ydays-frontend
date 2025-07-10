@@ -2,6 +2,7 @@ import Card from '../../../components/ui/Card';
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../services/api';
 
 const EventsAdd = () => {
   const [title, setTitle] = useState('');
@@ -17,6 +18,8 @@ const EventsAdd = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
+  // get authToken from local storage
+  const authToken = localStorage.getItem('authToken');
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -36,35 +39,61 @@ const EventsAdd = () => {
     maxSize: 5242880
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const eventData = {
+    console.log('-----------------------------');
+
+    console.log("title " + title);
+    console.log("description " + description);
+    console.log("day " + day);
+    console.log("time " + time);
+    console.log("categorie " + categorie);
+    console.log(location);
+    console.log(price);
+    console.log(phone);
+    console.log(website);
+    console.log("programme", programme);
+    console.log(imageFile);
+
+    console.log('-----------------------------');
+    
+
+    
+
+    
+    // Compose the backend payload
+    console.log(authToken);
+    const payload = {
       title,
       description,
-      categorie,
-      day,
-      time,
-      location,
-      price: parseFloat(price) || "price",
-      phone,
+      type: 'EVENT',
+      address: location,
+      location: {
+        lat: 0, // TODO: Replace with real lat/lon if you have them
+        lon: 0,
+      },
+      phoneNumber: phone,
       website,
-      programme: programme.filter(p => p.heure && p.detail),
-      img: imagePreview || 'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?w=500&h=300&fit=crop'
+      // You can add openingHours, workingDays, categoryId, etc. if needed
+      metadata: {
+        day,
+        time,
+        price: parseFloat(price) || 0,
+        programme: programme.filter(p => p.heure && p.detail),
+      },
+      // You can add amenityIds, cancellationPolicy, accessibilityInfo, etc. if needed
     };
-    console.log('Event added:', eventData);
-    // alert(`Événement ajouté : ${title}`);
-    // setTitle('');
-    // setDescription('');
-    // setCategorie('');
-    // setDay('');
-    // setTime('');
-    // setLocation('');
-    // setPrice('');
-    // setPhone('');
-    // setWebsite('');
-    // setProgramme([{ heure: '', detail: '' }]);
-    // setImageFile(null);
-    // setImagePreview(null);
+    try {
+      
+      await api.post('/api/catalog/listings', payload, {
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      });
+      alert('Événement ajouté avec succès!');
+      navigate('/admin-dashboard/events');
+    } catch (err) {
+      console.error(err);
+      alert('Erreur lors de l\'ajout de l\'événement.');
+    }
   };
 
   const removeImage = () => {

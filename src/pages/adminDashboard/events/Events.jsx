@@ -1,16 +1,33 @@
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal } from 'antd';
-import eventsData from './eventsData.json';
+import api from '../../../services/api';
 
 const Events = () => {
   const navigate = useNavigate();
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [events, setEvents] = useState(eventsData);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get('/listings?type=EVENT&limit=100');
+        if (res.data && res.data.data) {
+          setEvents(res.data.data);
+        }
+      } catch (err) {
+        setEvents([]);
+      }
+      setLoading(false);
+    };
+    fetchEvents();
+  }, []);
 
   const handleAdd = () => {
     navigate('/admin-dashboard/events/add');
@@ -70,45 +87,55 @@ const Events = () => {
               </tr>
             </thead>
             <tbody>
-              {events.map((event) => (
-                <tr key={event.id} className="border-t hover:bg-gray-50">
-                  <td className="py-3 px-2 font-medium"><img 
-                      src={event.img} 
-                      alt={event.title}
-                      className="w-16 h-12 object-cover rounded"
-                    /> <br />
-                    {event.title}</td>
-                  <td className="py-3 px-2 text-sm">{event.categories.join(', ')}</td>
-                  <td className="py-3 px-2 text-sm">{event.day}</td>
-                  <td className="py-3 px-2 text-sm">{event.time}</td>
-                  <td className="py-3 px-2 text-sm">{event.location}</td>
-                  <td className="py-3 px-2 text-sm">{event.price.toFixed(2)} €</td>
-                  <td className="py-3 px-2">
-                    <div className="flex space-x-2">
-                      <Button 
-                        onClick={() => handleView(event)} 
-                        size="sm" 
-                        variant="secondary"
-                      >
-                        Voir
-                      </Button>
-                      <Button 
-                        onClick={() => handleEdit(event.id)} 
-                        size="sm"
-                      >
-                        Éditer
-                      </Button>
-                      <Button 
-                        onClick={() => handleDelete(event)} 
-                        size="sm" 
-                        variant="danger"
-                      >
-                        Supprimer
-                      </Button>
-                    </div>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan="7" className="py-6 text-center">Chargement des événements...</td>
                 </tr>
-              ))}
+              ) : events.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="py-6 text-center">Aucun événement trouvé.</td>
+                </tr>
+              ) : (
+                events.map((event) => (
+                  <tr key={event.id} className="border-t hover:bg-gray-50">
+                    <td className="py-3 px-2 font-medium"><img 
+                        src={event.img} 
+                        alt={event.title}
+                        className="w-16 h-12 object-cover rounded"
+                      /> <br />
+                      {event.title}</td>
+                    <td className="py-3 px-2 text-sm">{event.categories.join(', ')}</td>
+                    <td className="py-3 px-2 text-sm">{event.day}</td>
+                    <td className="py-3 px-2 text-sm">{event.time}</td>
+                    <td className="py-3 px-2 text-sm">{event.location}</td>
+                    <td className="py-3 px-2 text-sm">{event.price.toFixed(2)} €</td>
+                    <td className="py-3 px-2">
+                      <div className="flex space-x-2">
+                        <Button 
+                          onClick={() => handleView(event)} 
+                          size="sm" 
+                          variant="secondary"
+                        >
+                          Voir
+                        </Button>
+                        <Button 
+                          onClick={() => handleEdit(event.id)} 
+                          size="sm"
+                        >
+                          Éditer
+                        </Button>
+                        <Button 
+                          onClick={() => handleDelete(event)} 
+                          size="sm" 
+                          variant="danger"
+                        >
+                          Supprimer
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

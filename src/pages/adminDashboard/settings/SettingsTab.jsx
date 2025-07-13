@@ -105,6 +105,8 @@ const SettingsTab = () => {
     e.preventDefault();
     setSecurityLoading(true);
     try {
+
+      // Password update logic
       if (securityPassword !== securityConfirmPassword) {
         openNotification('error', 'Erreur', 'Les mots de passe ne correspondent pas.');
         setSecurityLoading(false);
@@ -151,17 +153,18 @@ const SettingsTab = () => {
             Profil
           </button>
           <button
-            className={`pb-2 px-2 font-medium ${activeTab === 'notifications' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('notifications')}
-          >
-            Notifications
-          </button>
-          <button
             className={`pb-2 px-2 font-medium ${activeTab === 'security' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
             onClick={() => setActiveTab('security')}
           >
             Sécurité
           </button>
+          <button
+            className={`pb-2 px-2 font-medium ${activeTab === 'notifications' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('notifications')}
+          >
+            Notifications
+          </button>
+          
         </div>
 
         
@@ -321,7 +324,8 @@ const SettingsTab = () => {
               <input
                 type="email"
                 value={securityEmail}
-                className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                onChange={e => setSecurityEmail(e.target.value)}
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100 cursor-not-allowed"
                 disabled
                 title="L'email ne peut pas être modifié depuis cette interface"
               />

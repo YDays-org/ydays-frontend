@@ -1,7 +1,7 @@
 import { ChartBarIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import Button from '../../../components/ui/Button';
 
-const Header = ({ onLogout }) => (
+const Header = () => (
   <header className="bg-white shadow-sm border-b">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-4">
@@ -20,7 +20,10 @@ const Header = ({ onLogout }) => (
         </Button>
         <Button
           className="bg-red-500 text-white hover:bg-red-600"
-          onClick={onLogout}
+          onClick={() => {
+            localStorage.clear();
+            window.location.href = '/';
+          }}
         >
           <ArrowRightOnRectangleIcon className="h-5 w-5 mr-2" />
           Se déconnecter

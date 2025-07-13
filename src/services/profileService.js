@@ -35,12 +35,11 @@ export const profileService = {
   },
 
   /**
-   * Update user profile
-   * @param {string} uid - User ID
+   * Update user profile (excluding password)
    * @param {Object} profileData - Profile data to update
    * @returns {Promise<Object>} Updated user profile
    */
-  async updateUserProfile(uid, profileData) {
+  async updateUserProfile(profileData) {
     try {
       const response = await api.put('/api/auth/profile', profileData);
       
@@ -51,6 +50,28 @@ export const profileService = {
       }
     } catch (error) {
       console.error('Error updating user profile on server:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Change user password
+   * @param {string} newPassword - New password
+   * @returns {Promise<Object>} Success response
+   */
+  async changePassword(newPassword) {
+    try {
+      const response = await api.post('/api/auth/change-password', {
+        newPassword
+      });
+      
+      if (response.data.success) {
+        return response.data;
+      } else {
+        throw new Error(response.data.error || 'Failed to change password');
+      }
+    } catch (error) {
+      console.error('Error changing password on server:', error);
       throw error;
     }
   }

@@ -19,11 +19,11 @@ const AuthProvider = ({ children }) => {
 
   // Sync user profile from server when user changes
   const syncUserProfile = async (user) => {
-    if (!user) {
-      setUserProfile(null);
-      storageService.removeUserProfile();
-      return;
-    }
+    // if (!user) {
+    //   setUserProfile(null);
+    //   storageService.removeUserProfile();
+    //   return;
+    // }
 
     try {
       // Try to get cached profile first

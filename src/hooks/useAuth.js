@@ -8,6 +8,7 @@ import { AuthContext } from '../contexts/AuthContext';
 export const useAuth = () => {
   const {
     currentUser,
+    userProfile,
     isAuthenticated,
     isLoading,
     signIn,
@@ -20,6 +21,7 @@ export const useAuth = () => {
 
   return {
     currentUser,
+    userProfile,
     isAuthenticated,
     isLoading,
     signIn,

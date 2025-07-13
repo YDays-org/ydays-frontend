@@ -65,6 +65,13 @@ export const storageService = {
   },
 
   /**
+   * Remove the user profile from local storage
+   */
+  removeUserProfile() {
+    localStorage.removeItem('userProfile');
+  },
+
+  /**
    * Clear all auth data from local storage
    */
   clearAuthData() {

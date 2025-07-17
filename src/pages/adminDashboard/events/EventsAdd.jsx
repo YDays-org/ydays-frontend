@@ -15,6 +15,7 @@ const EventsAdd = () => {
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [price, setPrice] = useState('');
+  const [capacity, setCapacity] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
   const [programme, setProgramme] = useState([{ heure: '', detail: '' }]);
@@ -63,6 +64,10 @@ const EventsAdd = () => {
 
 
     // Compose the backend payload to match the Postman example
+    let formattedWebsite = website;
+    if (website && !/^https?:\/\//i.test(website)) {
+      formattedWebsite = 'https://' + website;
+    }
     const payload = {
       title,
       description,
@@ -74,13 +79,14 @@ const EventsAdd = () => {
         lon: -7.5898,
       },
       phoneNumber: phone,
-      website,
+      website_url: formattedWebsite,
       openingHours: {
         start: time,
       },
       workingDays: [day],
       metadata: {
         price: price.toString(),
+        capacity: capacity ? capacity.toString() : undefined,
         programme: programme
           .filter(p => p.heure && p.detail)
           .map(p => ({ name: p.detail, time: p.heure })),
@@ -88,18 +94,35 @@ const EventsAdd = () => {
       status: 'published',
     };
     try {
+      console.log('creating listing');
+
       const result = await api.post('/api/catalog/listings', payload, {
         headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
       });
-      console.log('POST /api/catalog/listings response:', result.data.data);
+      console.log('POST listings response:', result.data.data);
 
       if (result.data.success) {
+        console.log('creating pricing schedule');
+
+        const pricing_schedule_payload = {
+          startTime: "2025-08-15T10:00:00.000Z",
+          endTime: "2025-08-15T10:00:00.000Z",
+          price: Number(price),
+          capacity: capacity,
+        }
+        const pricing_schedule_result = await api.post(`/api/partner/listings/${result.data.data.id}/schedules`, pricing_schedule_payload, {
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+        })
+        console.log('POST schedules response:', pricing_schedule_result.data.data);
+
         if (imageFile) {
           const formData = new FormData();
           formData.append('listingId', result.data.data.id);
           formData.append('caption', 'Main photo');
           formData.append('isCover', 'true');
           formData.append('media', imageFile);
+
+          console.log("creating media");
 
           const result_img = await api.post('/api/media/upload/single', formData, {
             headers: {
@@ -108,7 +131,7 @@ const EventsAdd = () => {
             },
           });
 
-          console.log("POST /api/media/upload/single response:", result_img.data.data);
+          console.log("POST media response:", result_img.data.data);
 
           if (result_img.data.success) {
             showNotification({
@@ -125,6 +148,7 @@ const EventsAdd = () => {
             }, 3000);
           }
         }
+
       }
 
     } catch (err) {
@@ -229,7 +253,7 @@ const EventsAdd = () => {
               placeholder="Lieu de l'événement"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-gray-700 mb-1">Prix (MAD)</label>
               <input
@@ -240,6 +264,17 @@ const EventsAdd = () => {
                 placeholder="Prix"
                 step="0.01"
                 min="0"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Capacité</label>
+              <input
+                type="number"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Nombre de places"
+                min="1"
               />
             </div>
             <div>
@@ -294,10 +329,10 @@ const EventsAdd = () => {
               <div
                 {...getRootProps()}
                 className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive && !isDragReject
-                    ? 'border-blue-400 bg-blue-50'
-                    : isDragReject
-                      ? 'border-red-400 bg-red-50'
-                      : 'border-gray-300 hover:border-gray-400'
+                  ? 'border-blue-400 bg-blue-50'
+                  : isDragReject
+                    ? 'border-red-400 bg-red-50'
+                    : 'border-gray-300 hover:border-gray-400'
                   }`}
               >
                 <input {...getInputProps()} />

@@ -1,7 +1,9 @@
 import Card from '../../../components/ui/Card';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
+import { showNotification } from '../../../components/ui/notification';
+import api from '../../../services/api';
 
 const ActivitiesAdd = () => {
   const [title, setTitle] = useState('');
@@ -16,7 +18,19 @@ const ActivitiesAdd = () => {
   const [programme, setProgramme] = useState([{ heure: '', activite: '' }]);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [capacity, setCapacity] = useState('');
   const navigate = useNavigate();
+  const authToken = localStorage.getItem('authToken');
+  const [categoriesDisponible, setCategoriesDisponible] = useState([]);
+  const [workingDays, setWorkingDays] = useState({
+    Lundi: false,
+    Mardi: false,
+    Mercredi: false,
+    Jeudi: false,
+    Vendredi: false,
+    Samedi: false,
+    Dimanche: false,
+  });
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -36,35 +50,131 @@ const ActivitiesAdd = () => {
     maxSize: 5242880
   });
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/api/catalog/categories');
+        if (response.data && response.data.data) {
+          const filtered = response.data.data.filter(cat => cat.slug.includes('activity'));
+          setCategoriesDisponible(filtered);
+        }
+      } catch (err) {
+        console.error('Erreur lors de la récupération des catégories', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleWorkingDayChange = (day) => {
+    setWorkingDays((prev) => ({ ...prev, [day]: !prev[day] }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validation: all fields must be filled
+    if (!title || !description || !categorie || !prix || !duration || !phone || !location || !capacity || inclus.some(i => !i) || !imageFile || nonInclus.some(i => !i) || programme.some(p => !p.heure || !p.activite) ||  !Object.values(workingDays).some(Boolean)) {
+      showNotification({
+        type: 'error',
+        message: 'Erreur',
+        description: 'Tous les champs sont obligatoires.',
+      });
+      return;
+    }
     const activityData = {
       title,
       description,
-      categorie,
-      prix: parseFloat(prix) || "price",
-      duration,
-      phone,
-      location,
-      inclus: inclus.filter(i => i),
-      nonInclus: nonInclus.filter(i => i),
-      programme: programme.filter(p => p.heure && p.activite),
-      img: imagePreview || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500&h=300&fit=crop'
+      categoryId: Number(categorie),
+      type: 'activity',
+      address: location,
+      location: {
+        lat: 33.5731,
+        lon: -7.5898,
+      },
+      phoneNumber: phone,
+      openingHours: {
+        start: duration,
+      },
+      workingDays: Object.keys(workingDays)
+        .filter(day => workingDays[day])
+        .map(day => day.toLowerCase()),
+      metadata: {
+        price: prix.toString(),
+        programme: programme
+          .filter(p => p.heure && p.activite)
+          .map(p => ({ name: p.activite, time: p.heure })),
+        inclus: inclus.filter(i => i),
+        non_inclus: nonInclus.filter(i => i),
+      },
+      status: 'published',
     };
     console.log('Activity added:', activityData);
-    // alert(`Activité ajoutée : ${title}`);
-    // setTitle('');
-    // setDescription('');
-    // setCategorie('');
-    // setPrix('');
-    // setDuration('');
-    // setPhone('');
-    // setLocation('');
-    // setInclus(['']);
-    // setNonInclus(['']);
-    // setProgramme([{ heure: '', activite: '' }]);
-    // setImageFile(null);
-    // setImagePreview(null);
+    
+    try {
+      console.log('creating listing');
+
+      const result = await api.post('/api/catalog/listings', activityData, {
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      });
+      console.log('POST listings response:', result.data.data);
+
+      if (result.data.success) {
+        console.log('creating pricing schedule');
+
+        const pricing_schedule_payload = {
+          startTime: "2025-08-15T10:00:00.000Z",
+          endTime: "2025-08-15T10:00:00.000Z",
+          price: Number(prix),
+          capacity: capacity,
+        }
+        const pricing_schedule_result = await api.post(`/api/partner/listings/${result.data.data.id}/schedules`, pricing_schedule_payload, {
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+        })
+        console.log('POST schedules response:', pricing_schedule_result.data.data);
+
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append('listingId', result.data.data.id);
+          formData.append('caption', 'Main photo');
+          formData.append('isCover', 'true');
+          formData.append('media', imageFile);
+
+          console.log("creating media");
+
+          const result_img = await api.post('/api/media/upload/single', formData, {
+            headers: {
+              ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+
+          console.log("POST media response:", result_img.data.data);
+
+          if (result_img.data.success) {
+            showNotification({
+              type: 'success', // 'success', 'error', 'info', or 'warning'
+              message: 'Succès',
+              description: "Activité ajouté avec succès!",
+              placement: 'topRight', // optional, default is 'topRight'
+              duration: 3, // optional, in seconds, default is 3
+            });
+
+            // navigate after 3 seconds
+            setTimeout(() => {
+              navigate('/admin-dashboard/activities');
+            }, 3000);
+          }
+        }
+
+      }
+
+    } catch (err) {
+      console.error(err);
+      showNotification({
+        type: 'error',
+        message: 'Erreur',
+        description: 'Erreur lors de l\'ajout de l\'événement.',
+      });
+    }
   };
 
   const removeImage = () => {
@@ -118,7 +228,6 @@ const ActivitiesAdd = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
             />
           </div>
           <div>
@@ -132,17 +241,20 @@ const ActivitiesAdd = () => {
           </div>
           <div>
             <label className="block text-gray-700 mb-1">Catégorie</label>
-            <input
-              type="text"
+            <select
               value={categorie}
               onChange={(e) => setCategorie(e.target.value)}
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ex: Sport, Bien-être, Atelier..."
-            />
+            >
+              <option value="">Sélectionnez une catégorie</option>
+              {categoriesDisponible.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-gray-700 mb-1">Prix (€)</label>
+              <label className="block text-gray-700 mb-1">Prix (MAD)</label>
               <input
                 type="number"
                 value={prix}
@@ -154,35 +266,64 @@ const ActivitiesAdd = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-1">Durée</label>
+              <label className="block text-gray-700 mb-1">Heure</label>
               <input
                 type="text"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
                 className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ex: 1h, 2h30..."
+                placeholder="Ex: 20:00"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Capacité *</label>
+              <input
+                type="number"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Capacité maximale"
+                min="1"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700 mb-1">Téléphone</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Téléphone"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Lieu</label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Lieu de l'activité"
               />
             </div>
           </div>
           <div>
-            <label className="block text-gray-700 mb-1">Téléphone</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Téléphone"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 mb-1">Lieu</label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Lieu de l'activité"
-            />
+            <label className="block text-gray-700 mb-2">Jours disponible</label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {Object.keys(workingDays).map((day) => (
+                <label key={day} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={workingDays[day]}
+                    onChange={() => handleWorkingDayChange(day)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm">{day}</span>
+                </label>
+              ))}
+            </div>
           </div>
           <div>
             <label className="block text-gray-700 mb-2">Inclus</label>
@@ -245,18 +386,18 @@ const ActivitiesAdd = () => {
             ))}
             <button type="button" onClick={addProgramme} className="text-blue-600 text-sm hover:text-blue-800">+ Ajouter</button>
           </div>
+
           <div>
             <label className="block text-gray-700 mb-2">Image de l'activité</label>
             {!imagePreview ? (
               <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                  isDragActive && !isDragReject
-                    ? 'border-blue-400 bg-blue-50'
-                    : isDragReject
+                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive && !isDragReject
+                  ? 'border-blue-400 bg-blue-50'
+                  : isDragReject
                     ? 'border-red-400 bg-red-50'
                     : 'border-gray-300 hover:border-gray-400'
-                }`}
+                  }`}
               >
                 <input {...getInputProps()} />
                 <div className="space-y-2">
@@ -310,8 +451,8 @@ const ActivitiesAdd = () => {
               </div>
             )}
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Ajouter l'activité

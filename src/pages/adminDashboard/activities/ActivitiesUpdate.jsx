@@ -2,15 +2,17 @@ import Card from '../../../components/ui/Card';
 import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useParams, useNavigate } from 'react-router-dom';
-import activitiesData from './activitiesData.json';
+import api from '../../../services/api';
+import { showNotification } from '../../../components/ui/notification';
 
 const ActivitiesUpdate = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [activity, setActivity] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [categories, setCategories] = useState('');
+  const [categorie, setCategorie] = useState('');
   const [prix, setPrix] = useState('');
   const [duration, setDuration] = useState('');
   const [phone, setPhone] = useState('');
@@ -20,25 +22,60 @@ const ActivitiesUpdate = () => {
   const [programme, setProgramme] = useState([{ heure: '', activite: '' }]);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [categoriesDisponible, setCategoriesDisponible] = useState([]);
+  const authToken = localStorage.getItem('authToken');
 
   useEffect(() => {
-    const foundActivity = activitiesData.find(a => a.id === parseInt(id));
-    if (foundActivity) {
-      setActivity(foundActivity);
-      setTitle(foundActivity.title);
-      setDescription(foundActivity.description);
-      setCategories(foundActivity.categories.join(', '));
-      setPrix(foundActivity.prix.toString());
-      setDuration(foundActivity.duration);
-      setPhone(foundActivity.phone);
-      setLocation(foundActivity.location);
-      setInclus(foundActivity.inclus.length ? foundActivity.inclus : ['']);
-      setNonInclus(foundActivity.nonInclus.length ? foundActivity.nonInclus : ['']);
-      setProgramme(foundActivity.programme.length ? foundActivity.programme : [{ heure: '', activite: '' }]);
-      setImagePreview(foundActivity.img);
-    }
-    setLoading(false);
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/api/catalog/categories');
+        if (response.data && response.data.data) {
+          const filtered = response.data.data.filter(cat => cat.slug.includes('activity'));
+          setCategoriesDisponible(filtered);
+        }
+      } catch (err) {
+        console.error('Erreur lors de la récupération des catégories', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch activity data from API
+  useEffect(() => {
+    const fetchActivity = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get(`/api/catalog/listings/${id}`);
+        if (res.data && res.data.data) {
+          const act = res.data.data;
+          setActivity(act);
+          setTitle(act.title || '');
+          setDescription(act.description || '');
+          setCategorie(act.categoryId ? String(act.categoryId) : '');
+          setPrix(act.metadata?.price ? String(act.metadata.price) : '');
+          setDuration(act.metadata?.duration || '');
+          setPhone(act.phoneNumber || '');
+          setLocation(act.address || '');
+          setInclus(act.metadata?.inclus && act.metadata.inclus.length > 0 ? act.metadata.inclus : ['']);
+          setNonInclus(act.metadata?.non_inclus && act.metadata.non_inclus.length > 0 ? act.metadata.non_inclus : ['']);
+          setProgramme(
+            act.metadata?.programme && act.metadata.programme.length > 0
+              ? act.metadata.programme.map(p => ({ heure: p.time, activite: p.name }))
+              : [{ heure: '', activite: '' }]
+          );
+          setImagePreview(act.coverImage?.mediaUrl || null);
+        }
+      } catch (err) {
+        console.error('Erreur lors de la récupération de l\'activité', err);
+        showNotification({
+          type: 'error',
+          message: 'Erreur',
+          description: 'Erreur lors de la récupération de l\'activité.'
+        });
+      }
+      setLoading(false);
+    };
+    fetchActivity();
   }, [id]);
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -59,25 +96,78 @@ const ActivitiesUpdate = () => {
     maxSize: 5242880
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const activityData = {
-      id: parseInt(id),
+    setLoading(true);
+
+    // Compose the backend payload
+    const payload = {
       title,
       description,
-      categories: categories.split(',').map(c => c.trim()),
-      prix: parseFloat(prix),
-      duration,
-      phone,
-      location,
-      inclus: inclus.filter(i => i),
-      nonInclus: nonInclus.filter(i => i),
-      programme: programme.filter(p => p.heure && p.activite),
-      img: imagePreview
+      categoryId: Number(categorie),
+      address: location,
+      phoneNumber: phone,
+      metadata: {
+        price: prix ? Number(prix) : undefined,
+        duration: duration || undefined,
+        inclus: inclus.filter(i => i),
+        non_inclus: nonInclus.filter(i => i),
+        programme: programme
+          .filter(p => p.heure && p.activite)
+          .map(p => ({ name: p.activite, time: p.heure })),
+      },
     };
-    console.log('Activity updated:', activityData);
-    alert(`Activité modifiée : ${title}`);
-    navigate('/admin-dashboard/activities');
+    try {
+      // Update activity
+      const result = await api.put(`/api/catalog/listings/${id}`, payload, {
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      });
+      if (result.data.success) {
+        // If a new image is selected, upload it
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append('listingId', id);
+          formData.append('caption', 'Main photo');
+          formData.append('isCover', 'true');
+          formData.append('media', imageFile);
+          const result_img = await api.post('/api/media/upload/single', formData, {
+            headers: {
+              ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          if (!result_img.data.success) {
+            showNotification({
+              type: 'warning',
+              message: 'Image',
+              description: 'L\'activité a été mise à jour, mais l\'image n\'a pas pu être modifiée.'
+            });
+          }
+        }
+        showNotification({
+          type: 'success',
+          message: 'Succès',
+          description: 'Activité mise à jour avec succès!'
+        });
+        setTimeout(() => {
+          navigate('/admin-dashboard/activities');
+        }, 1000);
+      } else {
+        showNotification({
+          type: 'error',
+          message: 'Erreur',
+          description: 'Erreur lors de la mise à jour de l\'activité.'
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification({
+        type: 'error',
+        message: 'Erreur',
+        description: 'Erreur lors de la mise à jour de l\'activité.'
+      });
+    }
+    setLoading(false);
   };
 
   const removeImage = () => {
@@ -176,14 +266,17 @@ const ActivitiesUpdate = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 mb-1">Catégories (séparées par des virgules)</label>
-            <input
-              type="text"
-              value={categories}
-              onChange={(e) => setCategories(e.target.value)}
+            <label className="block text-gray-700 mb-1">Catégorie</label>
+            <select
+              value={categorie}
+              onChange={(e) => setCategorie(e.target.value)}
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ex: Sport, Bien-être, Atelier..."
-            />
+            >
+              <option value="">Sélectionnez une catégorie</option>
+              {categoriesDisponible.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

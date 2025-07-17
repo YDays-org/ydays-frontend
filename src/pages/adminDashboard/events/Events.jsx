@@ -21,7 +21,9 @@ const Events = () => {
       try {
         const res = await api.get('/api/catalog/listings');
         if (res.data && res.data.data) {
-          setEvents(res.data.data);
+          // just how has type : 'event' in the database
+          const filteredEvents = res.data.data.filter(event => event.type === 'event');
+          setEvents(filteredEvents);
         }
       } catch (err) {
         console.error('Error fetching events:', err);
@@ -32,7 +34,6 @@ const Events = () => {
     fetchEvents();
   }, []);
 
-  console.log(events);
 
   const handleAdd = () => {
     navigate('/admin-dashboard/events/add');
@@ -132,7 +133,7 @@ const Events = () => {
                       )}
                     </td>
                     <td className="py-3 px-2 font-medium">{event.title}</td>
-                    <td className="py-3 px-2 text-sm">{event.working_days?.join(', ') || 'N/A'} à {event.opening_hours?.start || 'N/A'}</td>
+                    <td className="py-3 px-2 text-sm"><b>{event.working_days?.join(', ') || 'N/A'}</b> à <b>{event.opening_hours?.start || 'N/A'}</b></td>
                     <td className="py-3 px-2 text-sm">{event.address}</td>
                     <td className="py-3 px-2 text-sm">{event.metadata?.price ? `${event.metadata.price} MAD` : 'N/A'}</td>
                     <td className="py-3 px-2">

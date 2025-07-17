@@ -14,6 +14,7 @@ const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -31,9 +32,26 @@ const Events = () => {
       }
       setLoading(false);
     };
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get('/api/catalog/categories');
+        if (res.data && res.data.data) {
+          setCategories(res.data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setCategories([]);
+      }
+    };
     fetchEvents();
+    fetchCategories();
   }, []);
 
+  // Helper to get category name by id
+  const getCategoryName = (id) => {
+    const cat = categories.find(c => c.id === (id || Number(id)));
+    return cat ? cat.name : 'N/A';
+  };
 
   const handleAdd = () => {
     navigate('/admin-dashboard/events/add');
@@ -100,6 +118,7 @@ const Events = () => {
               <tr className="bg-gray-50">
                 <th className="py-3 px-2 font-medium">Image</th>
                 <th className="py-3 px-2 font-medium">Titre</th>
+                <th className="py-3 px-2 font-medium">Catégorie</th>
                 <th className="py-3 px-2 font-medium">Jour/Heure</th>
                 <th className="py-3 px-2 font-medium">Lieu</th>
                 <th className="py-3 px-2 font-medium">Prix</th>
@@ -133,13 +152,14 @@ const Events = () => {
                       )}
                     </td>
                     <td className="py-3 px-2 font-medium">{event.title}</td>
+                    <td className="py-3 px-2 text-sm">{getCategoryName(event.categoryId || event.category_id)}</td>
                     <td className="py-3 px-2 text-sm"><b>{event.working_days?.join(', ') || 'N/A'}</b> à <b>{event.opening_hours?.start || 'N/A'}</b></td>
                     <td className="py-3 px-2 text-sm">{event.address}</td>
                     <td className="py-3 px-2 text-sm">{event.metadata?.price ? `${event.metadata.price} MAD` : 'N/A'}</td>
                     <td className="py-3 px-2">
                       <span className={`px-2 py-1 rounded text-xs ${event.status === 'published'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
                         }`}>
                         {event.status}
                       </span>
@@ -198,8 +218,7 @@ const Events = () => {
                 )}
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{selectedEvent.title}</h3>
-                  <p className="text-gray-600 text-sm capitalize">Type: {selectedEvent.type}</p>
-                  <p className="text-gray-600 text-sm">Statut: {selectedEvent.status}</p>
+                  <p className="text-gray-600 text-sm">{getCategoryName(selectedEvent.categoryId || selectedEvent.category_id)}</p>
                 </div>
               </div>
               <div>
@@ -226,7 +245,7 @@ const Events = () => {
                 <div>
                   <h4 className="font-medium mb-1">Prix</h4>
                   <p className="text-sm text-gray-600">
-                    {selectedEvent.metadata?.price ? `${selectedEvent.metadata.price} €` : 'N/A'}
+                    {selectedEvent.metadata?.price ? `${selectedEvent.metadata.price} MAD` : 'N/A'}
                   </p>
                 </div>
                 <div>
@@ -244,6 +263,10 @@ const Events = () => {
                 <div>
                   <h4 className="font-medium mb-1">Note moyenne</h4>
                   <p className="text-sm text-gray-600">{selectedEvent.average_rating || 0}/5 ({selectedEvent.review_count || 0} avis)</p>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-1">Catégorie</h4>
+                  <p className="text-sm text-gray-600">Catégorie: {getCategoryName(selectedEvent.categoryId || selectedEvent.category_id)}</p>
                 </div>
               </div>
               {selectedEvent.metadata?.programme && selectedEvent.metadata.programme.length > 0 && (

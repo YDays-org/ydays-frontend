@@ -15,6 +15,7 @@ const Activities = () => {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -32,8 +33,26 @@ const Activities = () => {
       }
       setLoading(false);
     };
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get('/api/catalog/categories');
+        if (res.data && res.data.data) {
+          setCategories(res.data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setCategories([]);
+      }
+    };
     fetchEvents();
+    fetchCategories();
   }, []);
+
+  // Helper to get category name by id
+  const getCategoryName = (id) => {
+    const cat = categories.find(c => c.id === (id || Number(id)));
+    return cat ? cat.name : 'N/A';
+  };
 
   const handleAdd = () => {
     navigate('/admin-dashboard/activities/add');
@@ -102,6 +121,7 @@ const Activities = () => {
               <tr className="bg-gray-50">
                 <th className="py-3 px-2 font-medium">Image</th>
                 <th className="py-3 px-2 font-medium">Titre</th>
+                <th className="py-3 px-2 font-medium">Catégorie</th>
                 <th className="py-3 px-2 font-medium">Jour/Heure</th>
                 <th className="py-3 px-2 font-medium">Lieu</th>
                 <th className="py-3 px-2 font-medium">Prix</th>
@@ -135,6 +155,7 @@ const Activities = () => {
                       )}
                     </td>
                     <td className="py-3 px-2 font-medium">{activ.title}</td>
+                    <td className="py-3 px-2 text-sm">{getCategoryName(activ.categoryId || activ.category_id)}</td>
                     <td className="py-3 px-2 text-sm"><b>{activ.working_days?.join(', ') || 'N/A'}</b> à <b>{activ.opening_hours?.start || 'N/A'}</b></td>
                     <td className="py-3 px-2 text-sm">{activ.address}</td>
                     <td className="py-3 px-2 text-sm">{activ.metadata?.price ? `${activ.metadata.price} MAD` : 'N/A'}</td>
@@ -200,7 +221,7 @@ const Activities = () => {
                 )}
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{selectedActivity.title}</h3>
-                  <p className="text-gray-600 text-sm capitalize">Type: {selectedActivity.type}</p>
+                  <p className="text-gray-600 text-sm">Catégorie: {getCategoryName(selectedActivity.categoryId || selectedActivity.category_id)}</p>
                   <p className="text-gray-600 text-sm">Statut: {selectedActivity.status}</p>
                 </div>
               </div>

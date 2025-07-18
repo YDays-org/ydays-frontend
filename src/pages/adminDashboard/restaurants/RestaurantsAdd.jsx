@@ -109,8 +109,8 @@ const RestaurantsAdd = () => {
       },
       phoneNumber: phone,
       openingHours: {
-        start: openAt,
-        end: closeAt,
+        openAt: openAt,
+        closeAt: closeAt,
       },
       workingDays: selectedDays,
       metadata: {

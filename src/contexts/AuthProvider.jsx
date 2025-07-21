@@ -19,11 +19,11 @@ const AuthProvider = ({ children }) => {
 
   // Sync user profile from server when user changes
   const syncUserProfile = async (user) => {
-    if (!user) {
-      setUserProfile(null);
-      storageService.removeUserProfile();
-      return;
-    }
+    // if (!user) {
+    //   setUserProfile(null);
+    //   storageService.removeUserProfile();
+    //   return;
+    // }
 
     try {
       // Try to get cached profile first
@@ -79,7 +79,7 @@ const AuthProvider = ({ children }) => {
       if (token && storedUser) {
         try {
           // Optionally validate token with backend or Firebase
-          console.log('Validating token and restoring session...');
+          // console.log('Validating token and restoring session...');
           const parsedUser = JSON.parse(storedUser);
 
           // Simulate token validation (replace with actual validation logic)
@@ -122,7 +122,7 @@ const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log('User successfully synced with database.');
+      // console.log('User successfully synced with database.');
     } catch (error) {
       console.error('Error syncing user with database:', error);
     }
@@ -188,7 +188,7 @@ const AuthProvider = ({ children }) => {
       });
 
       if (response.data.success) {
-        console.log('User successfully signed up via server API.');
+        // console.log('User successfully signed up via server API.');
         return response.data.user;
       } else {
         throw new Error(response.data.message || 'Failed to sign up.');
@@ -206,7 +206,7 @@ const AuthProvider = ({ children }) => {
 
       // Clear local state
       setCurrentUser(null);
-      console.log('Setting currentUser to null after signOut');
+      // console.log('Setting currentUser to null after signOut');
       setUserProfile(null);
 
       // Remove user data from localStorage
@@ -219,7 +219,7 @@ const AuthProvider = ({ children }) => {
       // Redirect to home page
       window.location.href = '/';
 
-      console.log('User successfully signed out.');
+      // console.log('User successfully signed out.');
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
@@ -262,9 +262,9 @@ const AuthProvider = ({ children }) => {
   // Check if the user is authenticated
   const isAuthenticated = () => {
     const token = localStorage.getItem('authToken');
-    console.log("token from authProvider",token)
+    // console.log("token from authProvider",token)
     const currentUser = JSON.parse(localStorage.getItem('authUser'));
-    console.log("currentUser from authProvider",currentUser)
+    // console.log("currentUser from authProvider",currentUser)
     return !!currentUser && !!token;
   };
 

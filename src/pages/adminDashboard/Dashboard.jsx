@@ -14,10 +14,12 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Sidebar from './layout/Sidebar';
 import Header from './layout/Header';
+import { useAuth } from '../../hooks/useAuth';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
 
   const stats = {
@@ -92,6 +94,7 @@ const Dashboard = () => {
               tabs={tabs} 
               activeTab={activeTab} 
               setActiveTab={handleTabClick} 
+              greeting={<span><small>Bonjour</small> <i><b>{userProfile?.fullName || 'x'}</b></i></span>}
             />
           </div>
 

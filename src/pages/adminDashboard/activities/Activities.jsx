@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Modal } from 'antd';
 import activitiesData from './activitiesData.json';
+import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
 
 const Activities = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const Activities = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [activities, setActivities] = useState(activitiesData);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
 
   const handleAdd = () => {
     navigate('/admin-dashboard/activities/add');
@@ -47,6 +49,16 @@ const Activities = () => {
   const handleDeleteModalClose = () => {
     setDeleteModalOpen(false);
     setSelectedActivity(null);
+  };
+
+  const formatScheduleDisplay = (schedule) => {
+    const date = new Date(schedule.date);
+    const options = { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+    return `${date.toLocaleDateString('fr-FR', options)}`;
+  };
+
+  const formatPrice = (price) => {
+    return `${price.toFixed(2)} €`;
   };
 
   return (
@@ -136,6 +148,36 @@ const Activities = () => {
                 <h4 className="font-medium mb-2">Description</h4>
                 <p className="text-gray-700">{selectedActivity.description}</p>
               </div>
+              {/* Tarifs et disponibilités Section */}
+              {selectedActivity.schedules && selectedActivity.schedules.length > 0 && (
+                <Card className="p-8 shadow-sm border-0 bg-white/80 backdrop-blur-sm">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <CurrencyDollarIcon className="h-6 w-6 mr-2 text-green-600" />
+                    Tarifs et disponibilités
+                  </h2>
+                  <div className="space-y-4">
+                    {selectedActivity.schedules.map((schedule) => {
+                      const isSelected = selectedSchedule && selectedSchedule.id === schedule.id;
+                      return (
+                        <button
+                          key={schedule.id}
+                          type="button"
+                          onClick={() => setSelectedSchedule(schedule)}
+                          className={`flex justify-between items-center w-full p-4 rounded-lg transition-colors border-2 ${isSelected ? 'border-primary-600 bg-primary-50' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}
+                        >
+                          <div className="flex-1 text-left">
+                            <h4 className="font-medium">{formatScheduleDisplay(schedule)}</h4>
+                            <p className="text-gray-600 text-sm">
+                              Capacité: {schedule.capacity} personnes • Disponible: {schedule.capacity - (schedule.bookedSlots || 0)} places
+                            </p>
+                          </div>
+                          <span className="font-medium text-primary-600">{formatPrice(schedule.price)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-medium mb-1">Lieu</h4>

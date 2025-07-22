@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import { UserIcon, PhoneIcon, EnvelopeIcon, PhotoIcon, CalendarIcon, HeartIcon, CheckCircleIcon, ExclamationCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
 import { profileService } from '../services/profileService';
 import { bookingService } from '../services/bookingService';
+import { catalogService } from '../services/catalogService';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import Modal from '../components/ui/Modal';
+import api from '../services/api';
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,6 +21,9 @@ const Profile = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [reservations, setReservations] = useState([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
+  const [removingFavorite, setRemovingFavorite] = useState(null);
   const { userProfile } = useAuth();
   
   const [profileData, setProfileData] = useState({
@@ -30,20 +39,65 @@ const Profile = () => {
   // Store original data for reset functionality
   const [originalData, setOriginalData] = useState({});
 
-  const favorites = [
-    {
-      id: 1,
-      title: 'Restaurant Riad Yacout',
-      type: 'restaurant',
-      image: null
-    },
-    {
-      id: 2,
-      title: 'Balade à Cheval',
-      type: 'activité',
-      image: null
+  // Fetch user favorites from server
+  const fetchFavorites = async () => {
+    try {
+      setFavoritesLoading(true);
+      const response = await catalogService.getFavorites();
+      console.log('Favorites response:', response);
+      console.log('Favorites data:', response.data);
+      if (response.data && response.data.length > 0) {
+        console.log('First favorite:', response.data[0]);
+        console.log('First favorite listing:', response.data[0].listing);
+        console.log('First favorite media:', response.data[0].listing?.media);
+      }
+      setFavorites(response.data || []);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      showMessage('error', 'Erreur lors du chargement des favoris');
+    } finally {
+      setFavoritesLoading(false);
     }
-  ];
+  };
+
+  // Navigate to listing details
+  const handleListingClick = (listing) => {
+    if (listing?.id) {
+      const listingType = listing.type?.toLowerCase();
+      let route = '/';
+      
+      switch (listingType) {
+        case 'activity':
+          route = `/activity/${listing.id}`;
+          break;
+        case 'event':
+          route = `/event/${listing.id}`;
+          break;
+        case 'restaurant':
+          route = `/restaurant/${listing.id}`;
+          break;
+        default:
+          route = `/activity/${listing.id}`;
+      }
+      
+      navigate(route);
+    }
+  };
+
+  // Remove favorite from list
+  const handleRemoveFavorite = async (listingId) => {
+    try {
+      setRemovingFavorite(listingId);
+      await catalogService.removeFavorite(listingId);
+      setFavorites(prev => prev.filter(fav => fav.listing?.id !== listingId));
+      showMessage('success', 'Favori supprimé avec succès');
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      showMessage('error', 'Erreur lors de la suppression du favori');
+    } finally {
+      setRemovingFavorite(null);
+    }
+  };
 
   // Fetch user reservations from server
   const fetchReservations = async () => {
@@ -155,6 +209,7 @@ const Profile = () => {
 
     fetchProfileData();
     fetchReservations();
+    fetchFavorites();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array to run only once
 
@@ -265,6 +320,48 @@ const Profile = () => {
     { id: 'bookings', name: 'Mes réservations', icon: CalendarIcon },
     { id: 'favorites', name: 'Mes favoris', icon: HeartIcon },
   ];
+
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewBooking, setReviewBooking] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+
+  const openReviewModal = (booking) => {
+    setReviewBooking(booking);
+    setReviewRating(5);
+    setReviewComment('');
+    setReviewError('');
+    setShowReviewModal(true);
+  };
+  const closeReviewModal = () => {
+    setShowReviewModal(false);
+    setReviewBooking(null);
+    setReviewRating(5);
+    setReviewComment('');
+    setReviewError('');
+  };
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewBooking) return;
+    setReviewLoading(true);
+    setReviewError('');
+    try {
+      await api.post('/api/reviews', {
+        bookingId: reviewBooking.id,
+        rating: reviewRating,
+        comment: reviewComment,
+      });
+      showMessage('success', 'Avis ajouté avec succès !');
+      closeReviewModal();
+      fetchReservations();
+    } catch (error) {
+      setReviewError(error.response?.data?.message || 'Erreur lors de l\'envoi de l\'avis');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -499,40 +596,84 @@ const Profile = () => {
                       <p className="text-gray-500">Aucune réservation trouvée</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {reservations.map((booking) => (
-                        <div key={booking.id} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-medium text-gray-900">{booking.listing?.title || 'Réservation'}</h3>
-                              <p className="text-sm text-gray-500">{booking.listing?.address || 'Adresse non disponible'}</p>
-                              <p className="text-sm text-gray-500">
-                                {booking.createdAt ? new Date(booking.createdAt).toLocaleDateString('fr-FR', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                }) : 'Date non disponible'}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                {booking.numParticipants} participant{booking.numParticipants > 1 ? 's' : ''}
-                              </p>
+                        <div key={booking.id} className="border border-gray-200 rounded-xl p-6 bg-white/80 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 hover:shadow-md transition-shadow">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-4 mb-2">
+                              <div className="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                                {booking.listing?.media?.[0]?.mediaUrl ? (
+                                  <img src={booking.listing.media[0].mediaUrl} alt={booking.listing.title} className="h-16 w-16 object-cover rounded-lg" />
+                                ) : (
+                                  <PhotoIcon className="h-8 w-8 text-gray-400" />
+                                )}
+                              </div>
+                              <div>
+                                <h3 className="font-bold text-gray-900 text-lg mb-1">{booking.listing?.title || 'Réservation'}</h3>
+                                <p className="text-sm text-gray-500">{booking.listing?.address || 'Adresse non disponible'}</p>
+                                <p className="text-xs text-gray-400">{booking.createdAt ? new Date(booking.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Date non disponible'}</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                                {getStatusText(booking.status)}
-                              </span>
-                              {booking.totalAmount && (
-                                <p className="text-sm font-medium text-gray-900 mt-1">{booking.totalAmount} MAD</p>
-                              )}
+                            <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                              <span>{booking.numParticipants} participant{booking.numParticipants > 1 ? 's' : ''}</span>
+                              {booking.totalAmount && <span className="font-semibold">{booking.totalAmount} MAD</span>}
                             </div>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>{getStatusText(booking.status)}</span>
+                          </div>
+                          <div className="flex flex-col items-end gap-2 min-w-[160px]">
+                            {/* Add Review Button: show if completed and not reviewed */}
+                            {booking.status === 'completed' && !booking.reviewed && (
+                              <Button size="sm" className="bg-primary-600 hover:bg-primary-700 text-white" onClick={() => openReviewModal(booking)}>
+                                Ajouter un avis
+                              </Button>
+                            )}
+                            {/* If already reviewed, show a badge */}
+                            {booking.status === 'completed' && booking.reviewed && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Avis envoyé</span>
+                            )}
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
+                {/* Review Modal */}
+                <Modal isOpen={showReviewModal} onClose={closeReviewModal} title="Ajouter un avis">
+                  <form onSubmit={handleReviewSubmit} className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Note</label>
+                      <div className="flex items-center gap-1">
+                        {[1,2,3,4,5].map((star) => (
+                          <button
+                            type="button"
+                            key={star}
+                            onClick={() => setReviewRating(star)}
+                            className={star <= reviewRating ? 'text-yellow-400' : 'text-gray-300'}
+                            tabIndex={-1}
+                          >
+                            <StarIconSolid className="h-6 w-6" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Commentaire</label>
+                      <textarea
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        rows={4}
+                        value={reviewComment}
+                        onChange={e => setReviewComment(e.target.value)}
+                        placeholder="Partagez votre expérience..."
+                        required
+                      />
+                    </div>
+                    {reviewError && <p className="text-red-600 text-sm">{reviewError}</p>}
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={closeReviewModal} disabled={reviewLoading}>Annuler</Button>
+                      <Button type="submit" className="bg-primary-600 hover:bg-primary-700 text-white" disabled={reviewLoading}>{reviewLoading ? 'Envoi...' : 'Envoyer l\'avis'}</Button>
+                    </div>
+                  </form>
+                </Modal>
               </Card>
             )}
 
@@ -542,30 +683,96 @@ const Profile = () => {
                 <div className="p-6">
                   <h2 className="text-xl font-semibold mb-6">Mes favoris</h2>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {favorites.map((favorite) => (
-                      <div key={favorite.id} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="h-16 w-16 bg-gray-200 rounded-lg flex-shrink-0">
-                            {favorite.image && (
-                              <img
-                                src={favorite.image}
-                                alt={favorite.title}
-                                className="h-16 w-16 object-cover rounded-lg"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                }}
-                              />
-                            )}
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-gray-900">{favorite.title}</h3>
-                            <p className="text-sm text-gray-500 capitalize">{favorite.type}</p>
+                  {favoritesLoading ? (
+                    <div className="flex justify-center py-8">
+                      <LoadingSpinner />
+                    </div>
+                  ) : favorites.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <p>Vous n'avez pas encore de favoris</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {favorites.filter(fav => fav.listing).map((favorite) => (
+                        <div key={favorite.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div className="flex items-start space-x-4">
+                            <div 
+                              className="h-20 w-20 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden cursor-pointer"
+                              onClick={() => handleListingClick(favorite.listing)}
+                            >
+                              {(() => {
+                                const media = favorite.listing?.media;
+                                const imageUrl = media?.[0]?.mediaUrl || media?.[0]?.media_url;
+                                
+                                console.log('Media for listing:', favorite.listing?.title, media);
+                                console.log('Image URL:', imageUrl);
+                                
+                                if (imageUrl) {
+                                  return (
+                                    <img
+                                      src={imageUrl}
+                                      alt={favorite.listing.title}
+                                      className="h-20 w-20 object-cover rounded-lg hover:opacity-90 transition-opacity"
+                                      onError={(e) => {
+                                        console.log('Image failed to load:', e.target.src);
+                                        e.target.style.display = 'none';
+                                        // Show fallback
+                                        const fallback = e.target.nextSibling;
+                                        if (fallback) fallback.style.display = 'flex';
+                                      }}
+                                    />
+                                  );
+                                }
+                                return null;
+                              })()}
+                              <div className="h-20 w-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <PhotoIcon className="h-8 w-8 text-gray-400" />
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 
+                                className="font-medium text-gray-900 truncate cursor-pointer hover:text-blue-600 transition-colors"
+                                onClick={() => handleListingClick(favorite.listing)}
+                              >
+                                {favorite.listing?.title}
+                              </h3>
+                              <p className="text-sm text-gray-500 capitalize">{favorite.listing?.type?.toLowerCase()}</p>
+                              {favorite.listing?.location && (
+                                <p className="text-sm text-gray-400 truncate">{favorite.listing.location}</p>
+                              )}
+                              {favorite.listing?.category && (
+                                <p className="text-xs text-blue-600 mt-1">{favorite.listing.category.name}</p>
+                              )}
+                              <div className="flex items-center mt-2 text-xs text-gray-500">
+                                {favorite.listing?.pricePerPerson && (
+                                  <span className="mr-3">{favorite.listing.pricePerPerson} MAD/pers</span>
+                                )}
+                                {favorite.listing?._count?.reviews > 0 && (
+                                  <span className="mr-3">{favorite.listing._count.reviews} avis</span>
+                                )}
+                                {favorite.listing?._count?.bookings > 0 && (
+                                  <span>{favorite.listing._count.bookings} réservations</span>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleRemoveFavorite(favorite.listing.id)}
+                              disabled={removingFavorite === favorite.listing.id}
+                              className="text-red-600 hover:text-red-800 p-2 flex-shrink-0 disabled:opacity-50"
+                              title="Supprimer des favoris"
+                            >
+                              {removingFavorite === favorite.listing.id ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600"></div>
+                              ) : (
+                                <XMarkIcon className="h-5 w-5" />
+                              )}
+                            </button>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Card>
             )}

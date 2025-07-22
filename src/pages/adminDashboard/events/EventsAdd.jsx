@@ -1,22 +1,45 @@
 import Card from '../../../components/ui/Card';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../services/api';
+import { showNotification } from '../../../components/ui/notification';
+
+
 
 const EventsAdd = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [categories, setCategories] = useState('');
+  const [categorie, setCategorie] = useState('');
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [price, setPrice] = useState('');
+  const [capacity, setCapacity] = useState('');
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
   const [programme, setProgramme] = useState([{ heure: '', detail: '' }]);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
+  // get authToken from local storage
+  const authToken = localStorage.getItem('authToken');
+  const [categoriesDisponible, setCategoriesDisponible] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/api/catalog/categories');
+        if (response.data && response.data.data) {
+          const filtered = response.data.data.filter(cat => cat.slug.includes('event'));
+          setCategoriesDisponible(filtered);
+        }
+      } catch (err) {
+        console.error('Erreur lors de la récupération des catégories', err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -36,35 +59,106 @@ const EventsAdd = () => {
     maxSize: 5242880
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const eventData = {
+
+
+    // Compose the backend payload to match the Postman example
+    let formattedWebsite = website;
+    if (website && !/^https?:\/\//i.test(website)) {
+      formattedWebsite = 'https://' + website;
+    }
+    const payload = {
       title,
       description,
-      categories: categories.split(',').map(c => c.trim()),
-      day,
-      time,
-      location,
-      price: parseFloat(price),
-      phone,
-      website,
-      programme: programme.filter(p => p.heure && p.detail),
-      img: imagePreview || 'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?w=500&h=300&fit=crop'
+      categoryId: Number(categorie),
+      type: 'event',
+      address: location,
+      location: {
+        lat: 33.5731,
+        lon: -7.5898,
+      },
+      phoneNumber: phone,
+      website_url: formattedWebsite,
+      openingHours: {
+        start: time,
+      },
+      workingDays: [day],
+      metadata: {
+        price: price.toString(),
+        capacity: capacity ? capacity.toString() : undefined,
+        programme: programme
+          .filter(p => p.heure && p.detail)
+          .map(p => ({ name: p.detail, time: p.heure })),
+      },
+      status: 'published',
     };
-    console.log('Event added:', eventData);
-    alert(`Événement ajouté : ${title}`);
-    setTitle('');
-    setDescription('');
-    setCategories('');
-    setDay('');
-    setTime('');
-    setLocation('');
-    setPrice('');
-    setPhone('');
-    setWebsite('');
-    setProgramme([{ heure: '', detail: '' }]);
-    setImageFile(null);
-    setImagePreview(null);
+    try {
+      console.log('creating listing');
+
+      const result = await api.post('/api/catalog/listings', payload, {
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      });
+      console.log('POST listings response:', result.data.data);
+
+      if (result.data.success) {
+        console.log('creating pricing schedule');
+
+        const pricing_schedule_payload = {
+          startTime: "2025-08-15T10:00:00.000Z",
+          endTime: "2025-08-15T10:00:00.000Z",
+          price: Number(price),
+          capacity: capacity,
+        }
+        const pricing_schedule_result = await api.post(`/api/partner/listings/${result.data.data.id}/schedules`, pricing_schedule_payload, {
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+        })
+        console.log('POST schedules response:', pricing_schedule_result.data.data);
+
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append('listingId', result.data.data.id);
+          formData.append('caption', 'Main photo');
+          formData.append('isCover', 'true');
+          formData.append('media', imageFile);
+
+          console.log("creating media");
+
+          const result_img = await api.post('/api/media/upload/single', formData, {
+            headers: {
+              ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+
+          console.log("POST media response:", result_img.data.data);
+
+          if (result_img.data.success) {
+            showNotification({
+              type: 'success', // 'success', 'error', 'info', or 'warning'
+              message: 'Succès',
+              description: "Événement ajouté avec succès!",
+              placement: 'topRight', // optional, default is 'topRight'
+              duration: 3, // optional, in seconds, default is 3
+            });
+
+            // navigate after 3 seconds
+            setTimeout(() => {
+              navigate('/admin-dashboard/events');
+            }, 3000);
+          }
+        }
+
+      }
+
+    } catch (err) {
+      console.error(err);
+      showNotification({
+        type: 'error',
+        message: 'Erreur',
+        description: 'Erreur lors de l\'ajout de l\'événement.',
+      });
+    }
   };
 
   const removeImage = () => {
@@ -115,14 +209,17 @@ const EventsAdd = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 mb-1">Catégories (séparées par des virgules)</label>
-            <input
-              type="text"
-              value={categories}
-              onChange={(e) => setCategories(e.target.value)}
+            <label className="block text-gray-700 mb-1">Catégorie</label>
+            <select
+              value={categorie}
+              onChange={(e) => setCategorie(e.target.value)}
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ex: Musique, Culture, Salon..."
-            />
+            >
+              <option value="">Sélectionnez une catégorie</option>
+              {categoriesDisponible.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -156,9 +253,9 @@ const EventsAdd = () => {
               placeholder="Lieu de l'événement"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-gray-700 mb-1">Prix (€)</label>
+              <label className="block text-gray-700 mb-1">Prix (MAD)</label>
               <input
                 type="number"
                 value={price}
@@ -167,6 +264,17 @@ const EventsAdd = () => {
                 placeholder="Prix"
                 step="0.01"
                 min="0"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Capacité</label>
+              <input
+                type="number"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Nombre de places"
+                min="1"
               />
             </div>
             <div>
@@ -220,13 +328,12 @@ const EventsAdd = () => {
             {!imagePreview ? (
               <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                  isDragActive && !isDragReject
-                    ? 'border-blue-400 bg-blue-50'
-                    : isDragReject
+                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive && !isDragReject
+                  ? 'border-blue-400 bg-blue-50'
+                  : isDragReject
                     ? 'border-red-400 bg-red-50'
                     : 'border-gray-300 hover:border-gray-400'
-                }`}
+                  }`}
               >
                 <input {...getInputProps()} />
                 <div className="space-y-2">
@@ -280,8 +387,8 @@ const EventsAdd = () => {
               </div>
             )}
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Ajouter l'événement

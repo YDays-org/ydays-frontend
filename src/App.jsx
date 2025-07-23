@@ -40,7 +40,6 @@ const EventsUpdate = lazy(() => import('./pages/adminDashboard/events/EventsUpda
 
 // bookings
 const BookingsTab = lazy(() => import('./pages/adminDashboard/bookings/BookingsTab'));
-const BookingDetail = lazy(() => import('./pages/adminDashboard/bookings/BookingsConfirm'));
 
 // Protected Route component that checks authentication
 const ProtectedRoute = ({ children }) => {
@@ -63,7 +62,7 @@ const AdminRoute = ({ children }) => {
   const { currentUser, loading, isAuthenticated } = useAuth();
   if (loading) return <LoadingSpinner />;
   if (!currentUser && !isAuthenticated()) return <Navigate to="/auth/login" replace />;
-  if (currentUser?.email !== 'espadasoy@gmail.com') return <Navigate to="/profile" replace />;
+  if (currentUser?.email !== 'yassineova@gmail.com') return <Navigate to="/profile" replace />;
   return children;
 };
 
@@ -71,7 +70,7 @@ const UserRoute = ({ children }) => {
   const { currentUser, loading, isAuthenticated } = useAuth();
   if (loading) return <LoadingSpinner />;
   if (!currentUser && !isAuthenticated()) return <Navigate to="/auth/login" replace />;
-  if (currentUser?.email === 'espadasoy@gmail.com') return <Navigate to="/admin-dashboard" replace />;
+  if (currentUser?.email === 'yassineova@gmail.com') return <Navigate to="/admin-dashboard" replace />;
   return children;
 };
 
@@ -136,7 +135,6 @@ function App() {
 
           {/* booking */}
           <Route path="bookings" element={<BookingsTab />} />
-          <Route path="bookings/confirm" element={<BookingDetail />} />
 
           {/* restaurants */}
           <Route path="restaurants" element={<RestaurantsManager />} />

@@ -100,5 +100,29 @@ export const bookingService = {
       console.error('Error cancelling reservation:', error);
       throw error;
     }
+  },
+
+  /**
+   * Get all reservations (admin)
+   * @returns {Promise<Object>} Response with all reservations data
+   */
+  async getAllReservations() {
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await api.get('/api/booking/reservations/all', { headers });
+      if (response.data && response.data.success) {
+        return {
+          data: response.data.data || [],
+          pagination: response.data.pagination || {}
+        };
+      } else {
+        console.warn('Server response was not successful:', response.data);
+        return { data: [], pagination: {} };
+      }
+    } catch (error) {
+      console.error('Error fetching all reservations from server:', error);
+      throw error;
+    }
   }
 };

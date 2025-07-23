@@ -89,7 +89,10 @@ const RestaurantDetail = () => {
         if (response.success) {
           setIsFavorite(response.data.isFavorite);
         }
-      } catch {}
+      } catch (error) {
+        // Ignore errors when checking favorite status
+        console.warn('Failed to check favorite status:', error);
+      }
     };
     checkFavoriteStatus();
   }, [isAuthenticated, id]);
@@ -189,7 +192,10 @@ const RestaurantDetail = () => {
           text: restaurant.description,
           url: window.location.href,
         });
-      } catch {}
+      } catch (error) {
+        // Ignore sharing errors (user cancelled)
+        console.warn('Sharing cancelled or failed:', error);
+      }
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
@@ -574,7 +580,7 @@ const RestaurantDetail = () => {
                   Tarifs et disponibilités
                 </h2>
                   <div className="space-y-4">
-                  {restaurant.schedules.map((schedule, index) => {
+                  {restaurant.schedules.map((schedule) => {
                     const isSelected = selectedSchedule && selectedSchedule.id === schedule.id;
                     return (
                       <button

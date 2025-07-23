@@ -1,47 +1,86 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MagnifyingGlassIcon, MapPinIcon, CalendarIcon, StarIcon } from '@heroicons/react/24/outline';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { showNotification } from '../components/ui/notification';
+import catalogService from '../services/catalogService';
+
+const CATEGORY_ICONS = {
+  activity: '🎯',
+  event: '🎉',
+  restaurant: '🍽️',
+};
+
+const CATEGORY_LABELS = {
+  activity: 'Activités',
+  event: 'Événements',
+  restaurant: 'Restaurants',
+};
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState([
+    { type: 'activity', icon: CATEGORY_ICONS.activity, name: CATEGORY_LABELS.activity, count: 0 },
+    { type: 'event', icon: CATEGORY_ICONS.event, name: CATEGORY_LABELS.event, count: 0 },
+    { type: 'restaurant', icon: CATEGORY_ICONS.restaurant, name: CATEGORY_LABELS.restaurant, count: 0 },
+  ]);
+  const [featuredActivities, setFeaturedActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const featuredActivities = [
-    {
-      id: 1,
-      title: 'Visite de la Médina',
-      category: 'Culture',
-      rating: 4.8,
-      price: '150 MAD',
-      image: '/images/medina.jpg',
-      location: 'Médina, Casablanca'
-    },
-    {
-      id: 2,
-      title: 'Cours de Cuisine Marocaine',
-      category: 'Gastronomie',
-      rating: 4.9,
-      price: '300 MAD',
-      image: '/images/cooking.jpg',
-      location: 'Centre-ville, Casablanca'
-    },
-    {
-      id: 3,
-      title: 'Balade en Bateau',
-      category: 'Loisirs',
-      rating: 4.7,
-      price: '200 MAD',
-      image: '/images/boat.jpg',
-      location: 'Port de Casablanca'
+  // Fetch categories and featured activities
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch counts for each type
+        const [activitiesRes, eventsRes, restaurantsRes] = await Promise.all([
+          catalogService.getListings({ type: 'activity', limit: 1 }),
+          catalogService.getListings({ type: 'event', limit: 1 }),
+          catalogService.getListings({ type: 'restaurant', limit: 1 }),
+        ]);
+        setCategories([
+          { type: 'activity', icon: CATEGORY_ICONS.activity, name: CATEGORY_LABELS.activity, count: activitiesRes.pagination?.total || activitiesRes.data?.length || 0 },
+          { type: 'event', icon: CATEGORY_ICONS.event, name: CATEGORY_LABELS.event, count: eventsRes.pagination?.total || eventsRes.data?.length || 0 },
+          { type: 'restaurant', icon: CATEGORY_ICONS.restaurant, name: CATEGORY_LABELS.restaurant, count: restaurantsRes.pagination?.total || restaurantsRes.data?.length || 0 },
+        ]);
+
+        // Fetch top 3 activities (by rating)
+        const featuredRes = await catalogService.getListings({ type: 'activity', limit: 3 });
+        setFeaturedActivities(featuredRes.data || []);
+      } catch (err) {
+        setError('Erreur lors du chargement des données.');
+        showNotification({ type: 'error', message: 'Erreur', description: 'Impossible de charger les données du serveur.' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const formatPrice = (price) => {
+    if (!price || price === 0) return 'Prix sur demande';
+    const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numericPrice)) return 'Prix sur demande';
+    return `${numericPrice.toFixed(0)} MAD`;
+  };
+
+  const getCoverImage = (listing) => {
+    if (listing.cover_image && listing.cover_image.mediaUrl) {
+      return listing.cover_image.mediaUrl;
     }
-  ];
-
-  const categories = [
-    { name: 'Activités', href: '/activities', icon: '🎯', count: '150+' },
-    { name: 'Événements', href: '/events', icon: '🎉', count: '25+' },
-    { name: 'Restaurants', href: '/restaurants', icon: '🍽️', count: '80+' },
-  ];
+    if (listing.media && listing.media.length > 0) {
+      const coverMedia = listing.media.find(m => m.isCover || m.is_cover);
+      if (coverMedia) {
+        return coverMedia.mediaUrl || coverMedia.media_url;
+      }
+      return listing.media[0].mediaUrl || listing.media[0].media_url;
+    }
+    return null;
+  };
 
   return (
     <div className="min-h-screen">
@@ -56,7 +95,6 @@ const Home = () => {
             <p className="text-xl md:text-2xl mb-8 text-primary-100">
               Les meilleures activités, événements et restaurants de la ville blanche
             </p>
-            
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto">
               <div className="relative">
@@ -83,7 +121,7 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Explorez par catégorie</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {categories.map((category) => (
-              <Link key={category.name} to={category.href}>
+              <Link key={category.type} to={`/${category.type === 'activity' ? 'activities' : category.type === 'event' ? 'events' : 'restaurants'}`}>
                 <Card className="p-8 text-center hover:shadow-lg transition-shadow cursor-pointer">
                   <div className="text-4xl mb-4">{category.icon}</div>
                   <h3 className="text-xl font-semibold mb-2">{category.name}</h3>
@@ -104,37 +142,73 @@ const Home = () => {
               <Button variant="outline">Voir tout</Button>
             </Link>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredActivities.map((activity) => (
-              <Card key={activity.id} className="overflow-hidden">
-                <div className="h-48 bg-gray-200 relative">
-                  <div className="absolute top-4 left-4 bg-primary-600 text-white px-2 py-1 rounded text-sm">
-                    {activity.category}
-                  </div>
-                  <div className="absolute top-4 right-4 bg-white text-gray-700 px-2 py-1 rounded text-sm font-semibold">
-                    {activity.price}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{activity.title}</h3>
-                  <div className="flex items-center text-gray-600 mb-3">
-                    <MapPinIcon className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{activity.location}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
-                      <span className="text-sm font-medium">{activity.rating}</span>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <LoadingSpinner />
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                <p className="text-red-800 mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()}>
+                  Réessayer
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredActivities.map((activity) => (
+                <Card key={activity.id} className="overflow-hidden">
+                  <div className="h-48 bg-gray-200 relative">
+                    {getCoverImage(activity) ? (
+                      <img
+                        src={getCoverImage(activity)}
+                        alt={activity.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                        <div className="text-center">
+                          <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                          <span className="text-sm text-gray-500">Activité</span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute top-4 left-4 bg-primary-600 text-white px-2 py-1 rounded text-sm">
+                      {activity.category?.name || activity.category_id || 'Catégorie'}
                     </div>
-                    <Link to={`/activity/${activity.id}`}>
-                      <Button size="sm">Réserver</Button>
-                    </Link>
+                    <div className="absolute top-4 right-4 bg-white text-gray-700 px-2 py-1 rounded text-sm font-semibold">
+                      {formatPrice(activity.metadata?.price || activity.cheapest_price)}
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold mb-2">{activity.title}</h3>
+                    <div className="flex items-center text-gray-600 mb-3">
+                      <MapPinIcon className="h-4 w-4 mr-1" />
+                      <span className="text-sm">{activity.address}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
+                        <span className="text-sm font-medium">
+                          {activity.average_rating ? (typeof activity.average_rating === 'string' ? parseFloat(activity.average_rating).toFixed(1) : activity.average_rating.toFixed(1)) : 'N/A'}
+                        </span>
+                        {activity.review_count > 0 && (
+                          <span className="text-sm text-gray-500 ml-1">
+                            ({activity.review_count})
+                          </span>
+                        )}
+                      </div>
+                      <Link to={`/activity/${activity.id}`}>
+                        <Button size="sm">Réserver</Button>
+                      </Link>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

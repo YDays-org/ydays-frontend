@@ -31,8 +31,8 @@ const EventsAdd = () => {
       try {
         const response = await api.get('/api/catalog/categories');
         if (response.data && response.data.data) {
-          const filtered = response.data.data.filter(cat => cat.slug.includes('event'));
-          setCategoriesDisponible(filtered);
+          // Use all available categories instead of filtering for 'event'
+          setCategoriesDisponible(response.data.data);
         }
       } catch (err) {
         console.error('Erreur lors de la récupération des catégories', err);

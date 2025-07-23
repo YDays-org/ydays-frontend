@@ -18,7 +18,7 @@ const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Sync user profile from server when user changes
-  const syncUserProfile = async (user) => {
+  const syncUserProfile = async () => {
     // if (!user) {
     //   setUserProfile(null);
     //   storageService.removeUserProfile();
@@ -49,24 +49,32 @@ const AuthProvider = ({ children }) => {
   };
 
   // Store token in localStorage when user logs in
-  const storeToken = (user) => {
-    const token = user?.accessToken || user?.stsTokenManager?.accessToken;
-    if (token) {
-      localStorage.setItem('authToken', token);
+  const storeToken = async (user) => {
+    try {
+      const token = await user.getIdToken();
+      if (token) {
+        localStorage.setItem('authToken', token);
+      }
+    } catch (error) {
+      console.error('Error getting ID token:', error);
     }
   };
 
   // Store user info and token in localStorage
-  const storeUserInfo = (user) => {
-    const token = user?.accessToken || user?.stsTokenManager?.accessToken;
-    const userInfo = {
-      uid: user?.uid,
-      email: user?.email,
-      displayName: user?.displayName,
-      photoURL: user?.photoURL,
-      token,
-    };
-    localStorage.setItem('authUser', JSON.stringify(userInfo));
+  const storeUserInfo = async (user) => {
+    try {
+      const token = await user.getIdToken();
+      const userInfo = {
+        uid: user?.uid,
+        email: user?.email,
+        displayName: user?.displayName,
+        photoURL: user?.photoURL,
+        token,
+      };
+      localStorage.setItem('authUser', JSON.stringify(userInfo));
+    } catch (error) {
+      console.error('Error storing user info:', error);
+    }
   };
 
   // Restore token and user info from localStorage on app initialization
@@ -108,7 +116,7 @@ const AuthProvider = ({ children }) => {
     if (!user) return;
 
     try {
-      const token = user?.accessToken || user?.stsTokenManager?.accessToken;
+      const token = await user.getIdToken();
       const userInfo = {
         id: user.uid,
         email: user.email,
@@ -132,8 +140,8 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        storeToken(user);
-        storeUserInfo(user);
+        await storeToken(user);
+        await storeUserInfo(user);
         setCurrentUser({ ...user });
         await syncUserProfile(user);
         await syncUserWithDatabase(user); // Sync user with database
@@ -167,8 +175,8 @@ const AuthProvider = ({ children }) => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      storeToken(user);
-      storeUserInfo(user);
+      await storeToken(user);
+      await storeUserInfo(user);
 
       // Sync user with database
       await syncUserWithDatabase(user);
@@ -266,8 +274,8 @@ const AuthProvider = ({ children }) => {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      storeToken(user);
-      storeUserInfo(user);
+      await storeToken(user);
+      await storeUserInfo(user);
 
       // Sync user with database
       await syncUserWithDatabase(user);

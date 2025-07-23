@@ -2,22 +2,21 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import { profileService } from '../../../services/profileService';
 import Card from '../../../components/ui/Card';
+import ProfileImage from '../../../components/ui/ProfileImage';
 import { notification } from 'antd';
 
 const SettingsTab = () => {
   const { userProfile, syncUserProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
   
   // Profile state
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // const [password, setPassword] = useState('');
+  // const [confirmPassword, setConfirmPassword] = useState('');
+  // const [showPassword, setShowPassword] = useState(false);
+  // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   // Notifications state
   const [notifEmail, setNotifEmail] = useState(true);
@@ -50,7 +49,6 @@ const SettingsTab = () => {
       fetchProfile();
     } else {
       setName(userProfile.fullName || '');
-      setEmail(userProfile.email || '');
       setPhoneNumber(userProfile.phoneNumber || '');
       setIsProfileLoading(false);
       setSecurityEmail(userProfile?.email || '');
@@ -87,10 +85,6 @@ const SettingsTab = () => {
       setActiveTab("profile")
     } catch (error) {
       openNotification('error', 'Erreur', error.response?.data?.error || error.message || 'Erreur lors de la mise à jour du profil.');
-      setMessage({ 
-        type: 'error', 
-        text: error.response?.data?.error || error.message || 'Erreur lors de la mise à jour du profil.' 
-      });
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +92,7 @@ const SettingsTab = () => {
 
   const handleNotifSubmit = (e) => {
     e.preventDefault();
-    setMessage({ type: 'success', text: 'Préférences de notifications sauvegardées !' });
+    openNotification('success', 'Succès', 'Préférences de notifications sauvegardées !');
   };
 
   const handleSecuritySubmit = async (e) => {
@@ -138,9 +132,6 @@ const SettingsTab = () => {
       minute: '2-digit'
     });
   };
-
-  console.log(userProfile);
-  
 
   return (
     <Card>
@@ -197,16 +188,14 @@ const SettingsTab = () => {
             ) : userProfile && (
               <div className="bg-gray-50 p-4 rounded-lg">
                 {/* Profile Picture */}
-                {userProfile.profilePictureUrl && (
-                  <div className="mb-6 pb-4 border-b">
-                    <h4 className="text-md font-semibold mb-3 text-gray-800">Photo de profil</h4>
-                    <img 
-                      src={userProfile.profilePictureUrl} 
-                      alt="Photo de profil" 
-                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                    />
-                  </div>
-                )}
+                <div className="mb-6 pb-4 border-b">
+                  <h4 className="text-md font-semibold mb-3 text-gray-800">Photo de profil</h4>
+                  <ProfileImage 
+                    src={userProfile.profilePictureUrl}
+                    alt="Photo de profil"
+                    fallbackName={userProfile.fullName || userProfile.email || 'U'}
+                  />
+                </div>
                 <h3 className="text-lg font-semibold mb-4 text-gray-800">Informations du compte</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>

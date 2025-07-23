@@ -62,7 +62,7 @@ const AdminRoute = ({ children }) => {
   const { currentUser, loading, isAuthenticated } = useAuth();
   if (loading) return <LoadingSpinner />;
   if (!currentUser && !isAuthenticated()) return <Navigate to="/auth/login" replace />;
-  if (currentUser?.email !== 'yassineova@gmail.com') return <Navigate to="/profile" replace />;
+  if (currentUser?.email !== 'espadasoy@gmail.com') return <Navigate to="/profile" replace />;
   return children;
 };
 
@@ -70,7 +70,7 @@ const UserRoute = ({ children }) => {
   const { currentUser, loading, isAuthenticated } = useAuth();
   if (loading) return <LoadingSpinner />;
   if (!currentUser && !isAuthenticated()) return <Navigate to="/auth/login" replace />;
-  if (currentUser?.email === 'yassineova@gmail.com') return <Navigate to="/admin-dashboard" replace />;
+  if (currentUser?.email === 'espadasoy@gmail.com') return <Navigate to="/admin-dashboard" replace />;
   return children;
 };
 

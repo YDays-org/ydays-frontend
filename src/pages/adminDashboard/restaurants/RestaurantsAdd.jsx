@@ -36,9 +36,8 @@ const RestaurantsAdd = () => {
         // Fetch categories from backend using api service
         const response = await api.get('/api/catalog/categories');
         if (response.data && response.data.data) {
-          // Filter for restaurant categories (slug includes 'restaurant')
-          const filtered = response.data.data.filter(cat => cat.slug && cat.slug.includes('restaurant'));
-          setCategoriesDisponible(filtered);
+          // Use all available categories instead of filtering for 'restaurant'
+          setCategoriesDisponible(response.data.data);
         }
       } catch (err) {
         console.error('Erreur lors de la récupération des catégories', err);

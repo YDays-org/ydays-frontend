@@ -55,8 +55,8 @@ const ActivitiesAdd = () => {
       try {
         const response = await api.get('/api/catalog/categories');
         if (response.data && response.data.data) {
-          const filtered = response.data.data.filter(cat => cat.slug.includes('activity'));
-          setCategoriesDisponible(filtered);
+          // Use all available categories instead of filtering for 'activity'
+          setCategoriesDisponible(response.data.data);
         }
       } catch (err) {
         console.error('Erreur lors de la récupération des catégories', err);

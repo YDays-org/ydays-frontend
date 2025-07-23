@@ -17,6 +17,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Toast from '../components/ui/Toast';
+import ReviewModal from '../components/ui/ReviewModal';
 import api from '../services/api';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
@@ -267,6 +268,8 @@ const BookingContent = () => {
   const [paymentError, setPaymentError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [completedBooking, setCompletedBooking] = useState(null);
   const stripe = useStripe();
   const elements = useElements();
 
@@ -438,32 +441,22 @@ const BookingContent = () => {
 
           // Success with payment!
           setPaymentSuccess(true);
+          setCompletedBooking(booking);
           
-          // Show success toast
+          // Show review modal after a short delay
           setTimeout(() => {
-            navigate('/profile', { 
-              state: { 
-                message: 'Votre réservation a été confirmée avec succès et le paiement a été effectué!',
-                bookingId: booking.id,
-                type: 'success'
-              } 
-            });
-          }, 2000);
+            setShowReviewModal(true);
+          }, 1500);
 
         } else {
           // Free booking - already confirmed
           setPaymentSuccess(true);
+          setCompletedBooking(booking);
           
-          // Show success toast
+          // Show review modal after a short delay
           setTimeout(() => {
-            navigate('/profile', { 
-              state: { 
-                message: 'Votre réservation gratuite a été confirmée avec succès!',
-                bookingId: booking.id,
-                type: 'success'
-              } 
-            });
-          }, 2000);
+            setShowReviewModal(true);
+          }, 1500);
         }
 
       } else {
@@ -484,6 +477,33 @@ const BookingContent = () => {
       setPaymentError(errorMessage);
       setIsLoading(false);
     }
+  };
+
+  // Review modal handlers
+  const handleReviewSubmitted = (reviewData) => {
+    console.log('Review submitted:', reviewData);
+    // Navigate to profile with success message
+    navigate('/profile', { 
+      state: { 
+        message: 'Votre réservation a été confirmée avec succès et votre avis a été publié!',
+        bookingId: completedBooking?.id,
+        type: 'success'
+      } 
+    });
+  };
+
+  const handleReviewModalClose = () => {
+    setShowReviewModal(false);
+    // Navigate to profile even if review was skipped
+    navigate('/profile', { 
+      state: { 
+        message: completedBooking?.totalPrice > 0 
+          ? 'Votre réservation a été confirmée avec succès et le paiement a été effectué!'
+          : 'Votre réservation gratuite a été confirmée avec succès!',
+        bookingId: completedBooking?.id,
+        type: 'success'
+      } 
+    });
   };
 
   const totalPrice = bookingDetails?.totalPrice || (currentBooking.price * parseInt(participants || 1));
@@ -714,6 +734,14 @@ const BookingContent = () => {
             </div>
           </>
         )}
+        
+        {/* Review Modal */}
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={handleReviewModalClose}
+          booking={completedBooking}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
       </div>
     </div>
   );

@@ -352,7 +352,8 @@ const EventDetail = () => {
       return [PLACEHOLDER_IMAGE];
     }
     
-    return event.media.map(m => m.media_url || m.mediaUrl);
+    // Handle both mediaUrl and media_url field names
+    return event.media.map(m => m.mediaUrl || m.media_url);
   };
 
   const nextImage = () => {
@@ -530,13 +531,13 @@ const EventDetail = () => {
               <span className="bg-blue-500/90 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
                 Événement
               </span>
-              {event.average_rating && event.average_rating > 0 && (
+              {(event.averageRating || event.average_rating) && (event.averageRating > 0 || event.average_rating > 0) && (
                 <div className="flex items-center bg-yellow-500/90 backdrop-blur-sm px-4 py-2 rounded-full">
                   <StarIconSolid className="h-4 w-4 mr-1" />
                   <span className="text-sm font-medium">
-                    {typeof event.average_rating === 'string' ? 
-                      parseFloat(event.average_rating).toFixed(1) : 
-                      Number(event.average_rating).toFixed(1)}
+                    {typeof (event.averageRating || event.average_rating) === 'string' ? 
+                      parseFloat(event.averageRating || event.average_rating).toFixed(1) : 
+                      Number(event.averageRating || event.average_rating).toFixed(1)}
                   </span>
                 </div>
               )}
@@ -555,14 +556,29 @@ const EventDetail = () => {
                 <div className="flex items-center">
                   <CalendarIcon className="h-5 w-5 mr-2" />
                   <span>
-                    {selectedSchedule.startTime || selectedSchedule.start_time || selectedSchedule.start_date ? 
-                      formatDate(selectedSchedule.startTime || selectedSchedule.start_time || selectedSchedule.start_date) : 
+                    {selectedSchedule.startTime ? 
+                      formatDate(selectedSchedule.startTime) : 
                       'Date à définir'
                     }
                   </span>
                 </div>
               )}
+              {/* Display event working days */}
+              {event.workingDays && event.workingDays.length > 0 && (
+                <div className="flex items-center">
+                  <ClockIcon className="h-5 w-5 mr-2" />
+                  <span>{event.workingDays.join(', ')}</span>
+                </div>
+              )}
             </div>
+            
+            {/* Display opening hours if available */}
+            {event.openingHours && event.openingHours.start && (
+              <div className="mt-4 flex items-center text-lg">
+                <ClockIcon className="h-5 w-5 mr-2" />
+                <span>Commence à {event.openingHours.start}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -606,7 +622,7 @@ const EventDetail = () => {
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <div className="flex items-center">
                       <UsersIcon className="h-4 w-4 mr-1" />
-                      <span>{event.review_count || 0} avis</span>
+                      <span>{event.reviewCount || event.review_count || 0} avis</span>
                     </div>
                     {event.partner?.isVerified && (
                       <div className="flex items-center">
@@ -614,6 +630,14 @@ const EventDetail = () => {
                         <span>Vérifié</span>
                       </div>
                     )}
+                    <div className="flex items-center">
+                      <TagIcon className="h-4 w-4 mr-1" />
+                      <span>Type: {event.type}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <InformationCircleIcon className="h-4 w-4 mr-1" />
+                      <span>Statut: {event.status}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -621,19 +645,16 @@ const EventDetail = () => {
               <div className="prose prose-lg max-w-none">
                 <div className="text-gray-700 leading-relaxed text-lg">
                   {showFullDescription ? (
-                    <div 
-                      dangerouslySetInnerHTML={{ 
-                        __html: typeof event.description === 'string' ? event.description : 'Aucune description disponible.' 
-                      }} 
-                    />
+                    <div className="whitespace-pre-wrap">
+                      {typeof event.description === 'string' ? event.description : 'Aucune description disponible.'}
+                    </div>
                   ) : (
-                    <div 
-                      dangerouslySetInnerHTML={{ 
-                        __html: typeof event.description === 'string' ? 
-                          (event.description.length > 300 ? event.description.substring(0, 300) + '...' : event.description) :
-                          'Aucune description disponible.'
-                      }} 
-                    />
+                    <div className="whitespace-pre-wrap">
+                      {typeof event.description === 'string' ? 
+                        (event.description.length > 300 ? event.description.substring(0, 300) + '...' : event.description) :
+                        'Aucune description disponible.'
+                      }
+                    </div>
                   )}
                   
                   {event.description && typeof event.description === 'string' && event.description.length > 300 && (
@@ -646,6 +667,48 @@ const EventDetail = () => {
                   )}
                 </div>
               </div>
+
+              {/* Event-specific metadata information */}
+              {metadata && Object.keys(metadata).length > 0 && (
+                <div className="mt-8 border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <InformationCircleIcon className="h-5 w-5 mr-2 text-blue-500" />
+                    Informations supplémentaires
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {metadata.price && (
+                      <div className="flex items-center space-x-2">
+                        <TagIcon className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">Prix :</span>
+                        <span className="font-medium">{formatPrice(metadata.price)}</span>
+                      </div>
+                    )}
+                    {metadata.capacity && (
+                      <div className="flex items-center space-x-2">
+                        <UsersIcon className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">Capacité :</span>
+                        <span className="font-medium">{metadata.capacity} personnes</span>
+                      </div>
+                    )}
+                    {metadata.programme && metadata.programme.length > 0 && (
+                      <div className="md:col-span-2">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <ClockIcon className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm text-gray-600 font-medium">Programme :</span>
+                        </div>
+                        <div className="space-y-2 ml-6">
+                          {metadata.programme.map((item, index) => (
+                            <div key={index} className="flex items-center space-x-4 text-sm">
+                              <span className="font-medium text-blue-600 min-w-0 w-16">{item.time}</span>
+                              <span className="text-gray-700">{item.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </Card>
 
             {/* Tarifs et disponibilités Section */}
@@ -670,6 +733,9 @@ const EventDetail = () => {
                           <p className="text-gray-600 text-sm">
                             Capacité: {schedule.capacity} personnes • Disponible: {schedule.capacity - (schedule.bookedSlots || 0)} places
                           </p>
+                          <p className="text-gray-500 text-xs">
+                            Monnaie: {schedule.currency || 'MAD'} • Places réservées: {schedule.bookedSlots || 0}
+                          </p>
                         </div>
                         <span className="font-medium text-primary-600">{formatPrice(schedule.price)}</span>
                       </button>
@@ -684,7 +750,9 @@ const EventDetail = () => {
                 <Card className="p-6 text-center shadow-sm border-0 bg-gradient-to-br from-primary-50 to-primary-100">
                   <CurrencyDollarIcon className="h-8 w-8 text-primary-600 mx-auto mb-2" />
                 <p className="text-sm text-gray-600 mb-1">Prix moyen</p>
-                <p className="text-2xl font-bold text-primary-600">{formatPrice(event.cheapest_price)}</p>
+                <p className="text-2xl font-bold text-primary-600">
+                  {formatPrice(event.cheapest_price || (selectedSchedule && selectedSchedule.price) || metadata.price)}
+                </p>
                   <p className="text-xs text-gray-500">par personne</p>
                 </Card>
               
@@ -693,19 +761,67 @@ const EventDetail = () => {
                   <CalendarIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
                   <p className="text-sm text-gray-600 mb-1">Prochaine date</p>
                   <p className="text-xl font-bold text-blue-600">
-                    {formatDate(selectedSchedule.startTime || selectedSchedule.start_time || selectedSchedule.start_date)}
+                    {formatDate(selectedSchedule.startTime)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formatTime(selectedSchedule.startTime)} - {formatTime(selectedSchedule.endTime)}
                   </p>
                 </Card>
               )}
-              
-              {event.phone && (
+
+              {(metadata.capacity || selectedSchedule?.capacity) && (
                 <Card className="p-6 text-center shadow-sm border-0 bg-gradient-to-br from-green-50 to-green-100">
-                  <PhoneIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600 mb-1">Contact</p>
-                  <p className="text-xl font-bold text-green-600">{event.phone}</p>
+                  <UsersIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600 mb-1">Capacité max</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {metadata.capacity || selectedSchedule?.capacity}
+                  </p>
+                  <p className="text-xs text-gray-500">personnes</p>
                 </Card>
               )}
             </div>
+
+            {/* Contact Information Card */}
+            {(event.phoneNumber || event.partner?.user?.phoneNumber || event.partner?.websiteUrl) && (
+              <Card className="p-6 shadow-sm border-0 bg-gradient-to-br from-blue-50 to-blue-100">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <PhoneIcon className="h-5 w-5 mr-2 text-blue-600" />
+                  Informations de contact
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {event.phoneNumber && (
+                    <div className="flex items-center space-x-3">
+                      <PhoneIcon className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm text-gray-600">Téléphone</p>
+                        <a 
+                          href={`tel:${event.phoneNumber}`}
+                          className="font-medium text-blue-600 hover:text-blue-700"
+                        >
+                          {event.phoneNumber}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {event.partner?.websiteUrl && (
+                    <div className="flex items-center space-x-3">
+                      <GlobeAltIcon className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm text-gray-600">Site web</p>
+                        <a 
+                          href={event.partner.websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-blue-600 hover:text-blue-700"
+                        >
+                          Visiter le site
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
 
             {/* Schedule Options */}
             {event.schedules && event.schedules.length > 1 && (
@@ -1064,7 +1180,7 @@ const EventDetail = () => {
                     <p className="text-gray-600 mb-6">Contactez l'organisateur pour plus d'informations</p>
                     <Button
                       onClick={() => {
-                        const phone = event.partner?.user?.phone || event.partner?.user?.phoneNumber;
+                        const phone = event.phoneNumber || event.partner?.user?.phoneNumber;
                         if (phone) {
                           window.location.href = `tel:${phone}`;
                         } else {
@@ -1072,7 +1188,7 @@ const EventDetail = () => {
                         }
                       }}
                       className="bg-gray-600 hover:bg-gray-700"
-                      disabled={!event.partner?.user?.phone && !event.partner?.user?.phoneNumber}
+                      disabled={!event.phoneNumber && !event.partner?.user?.phoneNumber}
                     >
                       Contacter l'organisateur
                     </Button>
@@ -1092,34 +1208,48 @@ const EventDetail = () => {
                       <UserIcon className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{event.partner?.user?.fullName || event.partner?.company_name || 'Organisateur'}</p>
+                      <p className="font-semibold text-gray-900">
+                        {event.partner?.companyName || event.partner?.company_name || 'Organisateur'}
+                      </p>
                       <p className="text-sm text-gray-600">Organisateur vérifié</p>
                     </div>
                   </div>
                   
                   <div className="space-y-2 text-sm">
-                    {event.partner?.user?.phone && (
+                    {(event.phoneNumber || event.partner?.user?.phoneNumber) && (
                       <div className="flex items-center">
                         <PhoneIcon className="h-4 w-4 mr-2 text-gray-400" />
                         <a 
-                          href={`tel:${event.partner.user.phone}`}
+                          href={`tel:${event.phoneNumber || event.partner.user.phoneNumber}`}
                           className="text-primary-600 hover:text-primary-700 font-medium"
                         >
-                          {event.partner.user.phone}
+                          {event.phoneNumber || event.partner.user.phoneNumber}
                         </a>
                       </div>
                     )}
-                    {event.partner?.website && (
+                    {event.partner?.user?.email && (
+                      <div className="flex items-center">
+                        <UserIcon className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="text-gray-600">{event.partner.user.email}</span>
+                      </div>
+                    )}
+                    {(event.partner?.websiteUrl || event.website || event.website_url) && (
                       <div className="flex items-center">
                         <GlobeAltIcon className="h-4 w-4 mr-2 text-gray-400" />
                         <a 
-                          href={event.partner.website} 
+                          href={event.partner?.websiteUrl || event.website || event.website_url} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-primary-600 hover:text-primary-700 font-medium"
                         >
                           Visiter le site
                         </a>
+                      </div>
+                    )}
+                    {event.partner?.companyAddress && (
+                      <div className="flex items-center">
+                        <MapPinIcon className="h-4 w-4 mr-2 text-gray-400" />
+                        <span className="text-gray-600 text-xs">{event.partner.companyAddress}</span>
                       </div>
                     )}
                   </div>

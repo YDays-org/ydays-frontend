@@ -17,7 +17,6 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, userProfile, signOut } = useAuth();
-
   // Handle logout
   const handleLogout = async () => {
     try {
@@ -97,7 +96,7 @@ const Header = () => {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
 
-                    {currentUser?.email === 'yassineova@gmail.com' ? (
+                    {currentUser?.email === 'espadasoy@gmail.com' ? (
                       <Link
                         to="/admin-dashboard"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -206,7 +205,7 @@ const Header = () => {
                       <UserIcon className="h-5 w-5" />
                       <span>Mon profil</span>
                     </Link>
-                    {currentUser?.email === 'yassineova@gmail.com' && (
+                    {currentUser?.email === 'espadasoy@gmail.com' && (
                       <Link
                         to="/admin-dashboard"
                         className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50"
